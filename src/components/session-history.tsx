@@ -13,6 +13,7 @@ import {
   Plus,
   Scale,
   Trash2,
+  X,
 } from "lucide-react";
 
 type CatchEntry = {
@@ -141,9 +142,25 @@ function logMapsUrl(entry: StoredSession) {
   });
 }
 
+function DetailItem({ label, value }: { label: string; value?: string | null }) {
+  if (!value) {
+    return null;
+  }
+
+  return (
+    <div className="rounded-lg bg-white/[0.045] p-3">
+      <dt className="text-xs font-medium text-slate-500">{label}</dt>
+      <dd className="mt-1 text-sm font-semibold leading-6 text-white">{value}</dd>
+    </div>
+  );
+}
+
 export function SessionHistory() {
   const [sessions, setSessions] = useState<StoredSession[]>([]);
   const [activeFilter, setActiveFilter] = useState<HistoryFilter>("all");
+  const [selectedSession, setSelectedSession] = useState<StoredSession | null>(
+    null,
+  );
 
   useEffect(() => {
     setSessions(
@@ -169,6 +186,9 @@ export function SessionHistory() {
     const updatedSessions = sessions.filter((entry) => entry.id !== id);
 
     setSessions(updatedSessions);
+    if (selectedSession?.id === id) {
+      setSelectedSession(null);
+    }
     localStorage.setItem("carplog:sessions", JSON.stringify(updatedSessions));
   }
 
@@ -232,7 +252,16 @@ export function SessionHistory() {
             return (
               <article
                 key={entry.id}
-                className="rounded-lg border border-white/10 bg-[#0d1b18]/90 p-4 shadow-xl shadow-black/20"
+                className="cursor-pointer rounded-lg border border-white/10 bg-[#0d1b18]/90 p-4 shadow-xl shadow-black/20 transition hover:border-emerald-300/25 hover:bg-[#10211d]"
+                role="button"
+                tabIndex={0}
+                onClick={() => setSelectedSession(entry)}
+                onKeyDown={(event) => {
+                  if (event.key === "Enter" || event.key === " ") {
+                    event.preventDefault();
+                    setSelectedSession(entry);
+                  }
+                }}
               >
                 <div className="flex items-start justify-between gap-3">
                   <div>
@@ -249,7 +278,10 @@ export function SessionHistory() {
                     aria-label={`Elimina sessione ${entry.session.spot}`}
                     className="inline-flex min-h-10 items-center justify-center gap-2 rounded-lg border border-white/10 px-3 text-xs font-bold text-slate-300 transition hover:border-red-300/30 hover:bg-red-400/10 hover:text-red-100"
                     type="button"
-                    onClick={() => deleteSession(entry.id)}
+                    onClick={(event) => {
+                      event.stopPropagation();
+                      deleteSession(entry.id);
+                    }}
                   >
                     <Trash2 aria-hidden="true" size={15} />
                     Elimina
@@ -315,7 +347,10 @@ export function SessionHistory() {
                     <a
                       className="mt-3 inline-flex min-h-10 w-full items-center justify-center gap-2 rounded-lg border border-emerald-300/25 bg-emerald-300/10 px-3 text-sm font-bold text-emerald-100 transition hover:bg-emerald-300/15"
                       href={getMapsUrl(entry)}
-                      onClick={() => logMapsUrl(entry)}
+                      onClick={(event) => {
+                        event.stopPropagation();
+                        logMapsUrl(entry);
+                      }}
                       rel="noreferrer"
                       target="_blank"
                     >
@@ -329,6 +364,149 @@ export function SessionHistory() {
           })}
         </div>
       )}
+
+      {selectedSession ? (
+        <div
+          className="fixed inset-0 z-50 flex items-end bg-black/70 px-3 pb-3 pt-10 backdrop-blur-sm"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="session-report-title"
+          onClick={() => setSelectedSession(null)}
+        >
+          <section
+            className="mx-auto max-h-[88vh] w-full max-w-md overflow-y-auto rounded-lg border border-white/10 bg-[#07110e] shadow-2xl shadow-black/60"
+            onClick={(event) => event.stopPropagation()}
+          >
+            <div className="sticky top-0 z-10 flex items-start justify-between gap-3 border-b border-white/10 bg-[#07110e]/95 p-4 backdrop-blur-xl">
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-emerald-200/70">
+                  Dettaglio
+                </p>
+                <h2
+                  id="session-report-title"
+                  className="mt-1 text-2xl font-bold text-white"
+                >
+                  Report sessione
+                </h2>
+              </div>
+              <button
+                aria-label="Chiudi report sessione"
+                className="grid h-10 w-10 shrink-0 place-items-center rounded-lg border border-white/10 text-slate-300 transition hover:bg-white/10 hover:text-white"
+                type="button"
+                onClick={() => setSelectedSession(null)}
+              >
+                <X aria-hidden="true" size={19} />
+              </button>
+            </div>
+
+            <div className="space-y-5 p-4">
+              <dl className="grid grid-cols-2 gap-3">
+                <DetailItem
+                  label="Data"
+                  value={formatDate(selectedSession.session.date)}
+                />
+                <DetailItem label="Spot" value={selectedSession.session.spot} />
+                <DetailItem
+                  label="Durata"
+                  value={selectedSession.session.duration}
+                />
+                <DetailItem label="Meteo" value={selectedSession.session.weather} />
+                <DetailItem label="Vento" value={selectedSession.session.wind} />
+                <DetailItem
+                  label="Temperatura"
+                  value={selectedSession.session.temperature}
+                />
+                <DetailItem
+                  label="Livello acqua"
+                  value={selectedSession.session.waterLevel}
+                />
+                <DetailItem
+                  label="Esca usata"
+                  value={selectedSession.setup?.bait}
+                />
+                <DetailItem label="Rig usato" value={selectedSession.setup?.rig} />
+              </dl>
+
+              {selectedSession.setup?.feeding ? (
+                <section className="rounded-lg border border-white/10 bg-white/[0.045] p-4">
+                  <h3 className="text-sm font-semibold text-white">Pasturazione</h3>
+                  <p className="mt-2 text-sm leading-6 text-slate-300">
+                    {selectedSession.setup.feeding}
+                  </p>
+                </section>
+              ) : null}
+
+              {selectedSession.notes ? (
+                <section className="rounded-lg border border-white/10 bg-white/[0.045] p-4">
+                  <h3 className="text-sm font-semibold text-white">Note</h3>
+                  <p className="mt-2 text-sm leading-6 text-slate-300">
+                    {selectedSession.notes}
+                  </p>
+                </section>
+              ) : null}
+
+              {hasLocation(selectedSession) ? (
+                <section className="rounded-lg border border-emerald-300/15 bg-emerald-300/5 p-4">
+                  <h3 className="flex items-center gap-2 text-sm font-semibold text-emerald-100">
+                    <LocateFixed aria-hidden="true" size={16} />
+                    Coordinate
+                  </h3>
+                  <p className="mt-2 text-sm leading-6 text-slate-300">
+                    {selectedSession.session.latitude},{" "}
+                    {selectedSession.session.longitude}
+                  </p>
+                  <a
+                    className="mt-3 inline-flex min-h-10 w-full items-center justify-center gap-2 rounded-lg border border-emerald-300/25 bg-emerald-300/10 px-3 text-sm font-bold text-emerald-100 transition hover:bg-emerald-300/15"
+                    href={getMapsUrl(selectedSession)}
+                    onClick={() => logMapsUrl(selectedSession)}
+                    rel="noreferrer"
+                    target="_blank"
+                  >
+                    Apri su Google Maps
+                    <ExternalLink aria-hidden="true" size={16} />
+                  </a>
+                </section>
+              ) : null}
+
+              <section className="space-y-3">
+                <h3 className="text-lg font-semibold text-white">Catture</h3>
+                {getCatches(selectedSession).length > 0 ? (
+                  <div className="space-y-3">
+                    {getCatches(selectedSession).map((catchEntry, index) => (
+                      <article
+                        key={`${catchEntry.id}-${index}`}
+                        className="rounded-lg border border-white/10 bg-[#0d1b18]/90 p-4"
+                      >
+                        <p className="text-sm font-semibold text-emerald-100">
+                          Cattura {index + 1}
+                        </p>
+                        <dl className="mt-3 grid grid-cols-2 gap-3">
+                          <DetailItem label="Peso" value={catchEntry.weight} />
+                          <DetailItem
+                            label="Lunghezza"
+                            value={catchEntry.length}
+                          />
+                          <DetailItem label="Esca" value={catchEntry.bait} />
+                          <DetailItem label="Ora" value={catchEntry.time} />
+                        </dl>
+                        {catchEntry.notes ? (
+                          <p className="mt-3 rounded-lg bg-white/[0.045] p-3 text-sm leading-6 text-slate-300">
+                            {catchEntry.notes}
+                          </p>
+                        ) : null}
+                      </article>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="rounded-lg border border-dashed border-white/10 bg-black/10 p-4 text-sm text-slate-400">
+                    Nessuna cattura registrata per questa sessione.
+                  </div>
+                )}
+              </section>
+            </div>
+          </section>
+        </div>
+      ) : null}
     </div>
   );
 }
