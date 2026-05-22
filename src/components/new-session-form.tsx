@@ -68,6 +68,8 @@ type StoredSession = {
 const fieldBase =
   "min-h-12 w-full rounded-lg border border-white/10 bg-[#07110e]/80 px-4 text-sm text-white outline-none transition placeholder:text-slate-500 focus:border-emerald-300/70 focus:bg-[#0c1a18] focus:ring-4 focus:ring-emerald-300/10";
 
+const quickCatchDraftKey = "carplog:quick-catch-draft";
+
 function getTodayValue() {
   const today = new Date();
   const timezoneOffset = today.getTimezoneOffset() * 60_000;
@@ -184,6 +186,68 @@ export function NewSessionForm() {
   const [locationMessage, setLocationMessage] = useState("");
   const [saveError, setSaveError] = useState("");
   const [saveMessage, setSaveMessage] = useState("");
+
+  useEffect(() => {
+    const shouldLoadQuickDraft =
+      new URLSearchParams(window.location.search).get("quickCatchDraft") === "1";
+
+    if (!shouldLoadQuickDraft || !formRef.current) {
+      return;
+    }
+
+    try {
+      const rawDraft = sessionStorage.getItem(quickCatchDraftKey);
+
+      if (!rawDraft) {
+        return;
+      }
+
+      const draft = JSON.parse(rawDraft) as StoredSession;
+      const form = formRef.current;
+      const setFormValue = (name: string, value: string) => {
+        const field = form.elements.namedItem(name);
+
+        if (
+          field instanceof HTMLInputElement ||
+          field instanceof HTMLSelectElement ||
+          field instanceof HTMLTextAreaElement
+        ) {
+          field.value = value;
+        }
+      };
+
+      setFormValue("date", draft.session.date);
+      setFormValue("duration", draft.session.duration);
+      setFormValue("spot", draft.session.spot);
+      setFormValue("weather", draft.session.weather);
+      setFormValue("wind", draft.session.wind);
+      setFormValue("temperature", draft.session.temperature);
+      setFormValue("waterLevel", draft.session.waterLevel);
+      setFormValue("bait", draft.setup.bait);
+      setFormValue("rig", draft.setup.rig);
+      setFormValue("feeding", draft.setup.feeding);
+      setFormValue("notes", draft.notes);
+
+      setCatches(Array.isArray(draft.catches) ? draft.catches : []);
+
+      if (
+        typeof draft.session.latitude === "number" &&
+        Number.isFinite(draft.session.latitude) &&
+        typeof draft.session.longitude === "number" &&
+        Number.isFinite(draft.session.longitude)
+      ) {
+        setLocation({
+          latitude: draft.session.latitude,
+          longitude: draft.session.longitude,
+        });
+        setLocationMessage("Posizione della cattura rapida caricata");
+      }
+
+      setCatchMessage("Cattura rapida caricata nella sessione");
+    } catch {
+      setSaveError("Non riesco a caricare la cattura rapida.");
+    }
+  }, []);
 
   useEffect(() => {
     if (!saveMessage) {
@@ -356,6 +420,7 @@ export function NewSessionForm() {
         "carplog:sessions",
         JSON.stringify([...storedSessions, session]),
       );
+      sessionStorage.removeItem(quickCatchDraftKey);
       debugLog("[CarpLog] localStorage save ok", {
         key: "carplog:sessions",
         sessionsCount: storedSessions.length + 1,

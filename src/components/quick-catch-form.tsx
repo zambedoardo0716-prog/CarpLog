@@ -62,6 +62,8 @@ type StoredSession = {
 const fieldBase =
   "min-h-12 w-full rounded-lg border border-teal-700/20 bg-slate-950/60 px-4 text-sm text-white outline-none transition placeholder:text-slate-500 focus:border-teal-500/70 focus:bg-slate-950 focus:ring-4 focus:ring-teal-700/15";
 
+const quickCatchDraftKey = "carplog:quick-catch-draft";
+
 function createSessionId() {
   return (
     globalThis.crypto?.randomUUID?.() ?? `session-${Date.now()}-${Math.random()}`
@@ -128,6 +130,7 @@ export function QuickCatchForm() {
   const [locationStatus, setLocationStatus] = useState("Rilevo lo spot...");
   const [error, setError] = useState("");
   const [savedMessage, setSavedMessage] = useState("");
+  const [pendingSession, setPendingSession] = useState<StoredSession | null>(null);
 
   useEffect(() => {
     if (!window.isSecureContext && !isLocalhost()) {
@@ -166,6 +169,7 @@ export function QuickCatchForm() {
     }
 
     setSavedMessage("");
+    setPendingSession(null);
     setForm((current) => ({
       ...current,
       [field]: value,
@@ -184,7 +188,6 @@ export function QuickCatchForm() {
 
     const now = new Date();
     const { date, time } = getLocalDateParts(now);
-    const storedSessions = readStoredSessions();
     const spotName = location ? "Posizione attuale" : "Cattura rapida";
     const notes = form.photoName
       ? [form.notes.trim(), `Foto: ${form.photoName}`].filter(Boolean).join("\n")
@@ -224,17 +227,15 @@ export function QuickCatchForm() {
     };
 
     try {
-      localStorage.setItem(
-        "carplog:sessions",
-        JSON.stringify([...storedSessions, session]),
-      );
+      sessionStorage.setItem(quickCatchDraftKey, JSON.stringify(session));
     } catch {
       setError(
-        "Salvataggio locale non riuscito. Controlla spazio disponibile o impostazioni privacy del browser.",
+        "Draft locale non riuscito. Controlla spazio disponibile o impostazioni privacy del browser.",
       );
       return;
     }
 
+    setPendingSession(session);
     formRef.current?.reset();
     setForm({
       weight: "",
@@ -247,9 +248,30 @@ export function QuickCatchForm() {
     setError("");
     setSavedMessage(
       location
-        ? "Cattura salvata con ora e posizione"
-        : "Cattura salvata con ora automatica",
+        ? "Cattura pronta con ora e posizione"
+        : "Cattura pronta con ora automatica",
     );
+  }
+
+  function savePendingSession() {
+    if (!pendingSession) {
+      return;
+    }
+
+    try {
+      const storedSessions = readStoredSessions();
+
+      localStorage.setItem(
+        "carplog:sessions",
+        JSON.stringify([...storedSessions, pendingSession]),
+      );
+      sessionStorage.removeItem(quickCatchDraftKey);
+      window.location.href = "/storico";
+    } catch {
+      setError(
+        "Salvataggio locale non riuscito. Controlla spazio disponibile o impostazioni privacy del browser.",
+      );
+    }
   }
 
   return (
@@ -402,17 +424,18 @@ export function QuickCatchForm() {
           <div className="mt-4 grid gap-2">
             <Link
               className="inline-flex min-h-11 items-center justify-center gap-2 rounded-lg border border-teal-700/35 bg-teal-700/15 px-4 text-sm font-bold text-teal-100 transition hover:bg-teal-700/20"
-              href="/nuova-sessione"
+              href="/nuova-sessione?quickCatchDraft=1"
             >
               Aggiungi dettagli avanzati
               <ChevronRight aria-hidden="true" size={17} />
             </Link>
-            <Link
+            <button
               className="inline-flex min-h-11 items-center justify-center rounded-lg border border-white/10 bg-slate-950/45 px-4 text-sm font-bold text-slate-200 transition hover:bg-white/10"
-              href="/"
+              type="button"
+              onClick={savePendingSession}
             >
-              Chiudi
-            </Link>
+              Non ora
+            </button>
           </div>
         </section>
       ) : null}
