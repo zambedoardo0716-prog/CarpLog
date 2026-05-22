@@ -10,23 +10,23 @@ export function AppShell({ children }: { children: ReactNode }) {
   const pathname = usePathname();
 
   return (
-    <div className="mx-auto flex min-h-screen w-full max-w-md flex-col overflow-hidden border-x border-[#d9e8d4]/10 bg-[#101614]/78 shadow-2xl shadow-[#050807]/40">
-      <header className="sticky top-0 z-20 border-b border-[#d9e8d4]/10 bg-[#101614]/90 px-5 pb-4 pt-5 backdrop-blur-xl">
+    <div className="mx-auto flex min-h-screen w-full max-w-md flex-col overflow-hidden border-x border-emerald-100/10 bg-stone-950/80 shadow-2xl shadow-black/40">
+      <header className="sticky top-0 z-20 border-b border-emerald-100/10 bg-stone-950/90 px-5 pb-4 pt-5 backdrop-blur-xl">
         <div className="flex items-center justify-between gap-4">
           <Link href="/" className="flex items-center gap-3">
-            <span className="grid h-11 w-11 place-items-center rounded-lg bg-[#9fc8a5] text-[#101614] shadow-lg shadow-[#0b120f]/45">
+            <span className="grid h-11 w-11 place-items-center rounded-lg bg-emerald-200 text-stone-950 shadow-lg shadow-black/40">
               <Fish aria-hidden="true" size={23} strokeWidth={2.4} />
             </span>
             <span>
               <span className="block text-lg font-semibold tracking-normal text-white">
                 CarpLog
               </span>
-              <span className="block text-xs font-medium text-[#d4e6cf]/70">
+              <span className="block text-xs font-medium text-emerald-100/70">
                 Diario carpfishing
               </span>
             </span>
           </Link>
-          <div className="rounded-full border border-[#b7d5b2]/20 bg-[#9fc8a5]/10 px-3 py-1 text-xs font-semibold text-[#d4e6cf]">
+          <div className="rounded-full border border-emerald-100/20 bg-emerald-100/10 px-3 py-1 text-xs font-semibold text-emerald-100">
             PWA
           </div>
         </div>
@@ -34,7 +34,7 @@ export function AppShell({ children }: { children: ReactNode }) {
 
       <main className="flex-1 px-5 pb-28 pt-6">{children}</main>
 
-      <nav className="fixed inset-x-0 bottom-0 z-30 mx-auto max-w-md border-t border-[#d9e8d4]/10 bg-[#101614]/94 px-2 pb-3 pt-2 backdrop-blur-xl">
+      <nav className="fixed inset-x-0 bottom-0 z-30 mx-auto max-w-md border-t border-emerald-100/10 bg-stone-950/95 px-2 pb-3 pt-2 backdrop-blur-xl">
         <div className="grid grid-cols-5 gap-1">
           {navigation.map((item) => {
             const Icon = item.icon;
@@ -48,7 +48,7 @@ export function AppShell({ children }: { children: ReactNode }) {
                 aria-current={isActive ? "page" : undefined}
                 className={`flex min-h-14 flex-col items-center justify-center gap-1 rounded-lg px-1 text-[0.68rem] font-semibold transition ${
                   isActive
-                    ? "bg-[#9fc8a5] text-[#101614] shadow-lg shadow-[#0b120f]/40"
+                    ? "bg-emerald-200 text-stone-950 shadow-lg shadow-black/40"
                     : "text-slate-300 hover:bg-white/10 hover:text-white"
                 }`}
               >
