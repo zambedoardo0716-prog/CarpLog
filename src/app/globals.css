@@ -7,8 +7,8 @@
 
 :root {
   color-scheme: dark;
-  --background: #07110e;
-  --foreground: #edf7f1;
+  --background: #101614;
+  --foreground: #f0f5ef;
 }
 
 * {
@@ -24,8 +24,8 @@ body {
   min-height: 100vh;
   margin: 0;
   background:
-    radial-gradient(circle at top left, rgba(34, 197, 94, 0.16), transparent 34rem),
-    linear-gradient(145deg, #07110e 0%, #0c1a18 46%, #111827 100%);
+    radial-gradient(circle at top left, rgba(159, 200, 165, 0.12), transparent 32rem),
+    linear-gradient(145deg, #101614 0%, #141f1b 48%, #1b211f 100%);
   color: var(--foreground);
 }
 

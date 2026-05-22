@@ -9,7 +9,6 @@ import {
   History,
   LocateFixed,
   MapPinned,
-  Plus,
   Trophy,
   X,
 } from "lucide-react";
@@ -136,8 +135,8 @@ function DetailItem({ label, value }: { label: string; value?: string | null }) 
   }
 
   return (
-    <div className="rounded-lg bg-white/[0.045] p-3">
-      <dt className="text-xs font-medium text-slate-500">{label}</dt>
+    <div className="rounded-lg bg-[#e1ecd7]/[0.05] p-3">
+      <dt className="text-xs font-medium text-slate-400">{label}</dt>
       <dd className="mt-1 text-sm font-semibold leading-6 text-white">{value}</dd>
     </div>
   );
@@ -206,8 +205,8 @@ export function HomeDashboard() {
 
   return (
     <div className="space-y-6">
-      <section className="overflow-hidden rounded-lg border border-emerald-300/15 bg-white/[0.06] p-5 shadow-xl shadow-black/20">
-        <p className="text-xs font-semibold uppercase tracking-[0.18em] text-emerald-200/75">
+      <section className="overflow-hidden rounded-lg border border-[#b7d5b2]/15 bg-[#19231f]/85 p-5 shadow-xl shadow-[#080d0b]/25">
+        <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#c6dcc7]/80">
           CarpLog
         </p>
         <h1 className="mt-3 text-3xl font-bold tracking-normal text-white">
@@ -218,7 +217,7 @@ export function HomeDashboard() {
         </p>
         <Link
           href="/nuova-sessione"
-          className="mt-5 inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-lg bg-emerald-400 px-4 text-sm font-bold text-[#07110e] shadow-lg shadow-emerald-950/40 transition hover:bg-emerald-300"
+          className="mt-5 inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-lg bg-[#9fc8a5] px-4 text-sm font-bold text-[#101614] shadow-lg shadow-[#0b120f]/45 transition hover:bg-[#b4d8b7]"
         >
           Nuova sessione
           <ArrowRight aria-hidden="true" size={18} />
@@ -226,33 +225,26 @@ export function HomeDashboard() {
       </section>
 
       {!hasSessions ? (
-        <section className="rounded-lg border border-dashed border-emerald-300/20 bg-[#0d1b18]/88 p-5 text-center shadow-xl shadow-black/20">
-          <div className="mx-auto grid h-12 w-12 place-items-center rounded-lg bg-emerald-300/10 text-emerald-100">
-            <Fish aria-hidden="true" size={23} />
+        <section className="rounded-lg border border-dashed border-[#b7d5b2]/18 bg-[#17211d]/88 p-4 text-center shadow-xl shadow-[#080d0b]/20">
+          <div className="mx-auto grid h-10 w-10 place-items-center rounded-lg bg-[#9fc8a5]/10 text-[#d4e6cf]">
+            <Fish aria-hidden="true" size={21} />
           </div>
-          <h2 className="mt-4 text-xl font-bold text-white">
+          <h2 className="mt-3 text-lg font-bold text-white">
             Inizia dal primo report
           </h2>
-          <p className="mt-2 text-sm leading-6 text-slate-400">
+          <p className="mt-1.5 text-sm leading-6 text-slate-300">
             Nessuna sessione ancora salvata. Crea la prima e CarpLog costruira
             automaticamente storico e statistiche.
           </p>
-          <Link
-            className="mt-5 inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-lg bg-emerald-400 px-4 text-sm font-bold text-[#07110e] transition hover:bg-emerald-300"
-            href="/nuova-sessione"
-          >
-            <Plus aria-hidden="true" size={18} />
-            Crea prima sessione
-          </Link>
         </section>
       ) : null}
 
       {summary.latestSession ? (
-        <section className="rounded-lg border border-white/10 bg-[#0d1b18]/90 p-4 shadow-xl shadow-black/20">
+        <section className="rounded-lg border border-[#d9e8d4]/10 bg-[#17211d]/90 p-4 shadow-xl shadow-[#080d0b]/20">
           <div className="flex items-center justify-between gap-3">
             <h2 className="text-lg font-semibold text-white">Ultima sessione</h2>
             {hasLocation(summary.latestSession) ? (
-              <span className="inline-flex items-center gap-1 rounded-lg bg-emerald-300/10 px-2 py-1 text-xs font-bold text-emerald-100">
+              <span className="inline-flex items-center gap-1 rounded-lg bg-[#9fc8a5]/10 px-2 py-1 text-xs font-bold text-[#d4e6cf]">
                 <LocateFixed aria-hidden="true" size={14} />
                 GPS
               </span>
@@ -260,7 +252,7 @@ export function HomeDashboard() {
           </div>
 
           <div className="mt-4">
-            <p className="flex items-center gap-2 text-sm font-semibold text-emerald-100">
+            <p className="flex items-center gap-2 text-sm font-semibold text-[#d4e6cf]">
               <CalendarDays aria-hidden="true" size={16} />
               {formatDate(summary.latestSession.session.date)}
             </p>
@@ -271,14 +263,14 @@ export function HomeDashboard() {
           </div>
 
           <div className="mt-4 grid grid-cols-2 gap-3">
-            <div className="rounded-lg bg-white/[0.045] p-3">
-              <p className="text-xs text-slate-500">Catture</p>
+            <div className="rounded-lg bg-[#e1ecd7]/[0.05] p-3">
+              <p className="text-xs text-slate-400">Catture</p>
               <p className="mt-1 text-xl font-bold text-white">
                 {latestCatches.length}
               </p>
             </div>
-            <div className="rounded-lg bg-white/[0.045] p-3">
-              <p className="text-xs text-slate-500">Peso migliore</p>
+            <div className="rounded-lg bg-[#e1ecd7]/[0.05] p-3">
+              <p className="text-xs text-slate-400">Peso migliore</p>
               <p className="mt-1 text-xl font-bold text-white">
                 {formatWeight(latestBestWeight)}
               </p>
@@ -286,7 +278,7 @@ export function HomeDashboard() {
           </div>
 
           <button
-            className="mt-4 inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-lg border border-emerald-300/25 bg-emerald-300/10 px-4 text-sm font-bold text-emerald-100 transition hover:bg-emerald-300/15"
+            className="mt-4 inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-lg border border-[#b7d5b2]/25 bg-[#9fc8a5]/10 px-4 text-sm font-bold text-[#d4e6cf] transition hover:bg-[#9fc8a5]/15"
             type="button"
             onClick={() => setSelectedSession(summary.latestSession)}
           >
@@ -303,12 +295,12 @@ export function HomeDashboard() {
           return (
             <article
               key={card.label}
-              className="min-h-28 rounded-lg border border-white/10 bg-[#0d1b18]/88 p-4 shadow-lg shadow-black/20"
+              className="min-h-28 rounded-lg border border-[#d9e8d4]/10 bg-[#17211d]/88 p-4 shadow-lg shadow-[#080d0b]/20"
             >
-              <div className="mb-3 grid h-9 w-9 place-items-center rounded-lg bg-emerald-300/10 text-emerald-200">
+              <div className="mb-3 grid h-9 w-9 place-items-center rounded-lg bg-[#9fc8a5]/10 text-[#c6dcc7]">
                 <Icon aria-hidden="true" size={19} />
               </div>
-              <p className="text-xs font-medium text-slate-400">{card.label}</p>
+              <p className="text-xs font-medium text-slate-300">{card.label}</p>
               <p className="mt-1 break-words text-2xl font-bold tracking-normal text-white">
                 {card.value}
               </p>
@@ -321,7 +313,7 @@ export function HomeDashboard() {
         <div className="flex items-center justify-between gap-3">
           <h2 className="text-lg font-semibold text-white">Attivita recente</h2>
           <Link
-            className="inline-flex items-center gap-1 text-xs font-bold text-emerald-100"
+            className="inline-flex items-center gap-1 text-xs font-bold text-[#d4e6cf]"
             href="/storico"
           >
             Storico
@@ -337,13 +329,13 @@ export function HomeDashboard() {
               return (
                 <article
                   key={entry.id}
-                  className="flex items-center justify-between gap-3 rounded-lg border border-white/10 bg-[#0d1b18]/88 p-3"
+                  className="flex items-center justify-between gap-3 rounded-lg border border-[#d9e8d4]/10 bg-[#17211d]/88 p-3"
                 >
                   <div className="min-w-0">
                     <p className="truncate text-sm font-semibold text-white">
                       {entry.session.spot || "Spot non indicato"}
                     </p>
-                    <p className="mt-1 text-xs text-slate-400">
+                    <p className="mt-1 text-xs text-slate-300">
                       {formatSavedAt(entry.savedAt)}
                     </p>
                   </div>
@@ -351,11 +343,11 @@ export function HomeDashboard() {
                     {hasLocation(entry) ? (
                       <LocateFixed
                         aria-label="Posizione salvata"
-                        className="text-emerald-200"
+                        className="text-[#c6dcc7]"
                         size={16}
                       />
                     ) : null}
-                    <span className="inline-flex items-center gap-1 rounded-lg bg-emerald-300/10 px-2 py-1 text-xs font-bold text-emerald-100">
+                    <span className="inline-flex items-center gap-1 rounded-lg bg-[#9fc8a5]/10 px-2 py-1 text-xs font-bold text-[#d4e6cf]">
                       <Fish aria-hidden="true" size={14} />
                       {catchesCount}
                     </span>
@@ -365,7 +357,7 @@ export function HomeDashboard() {
             })}
           </div>
         ) : (
-          <div className="rounded-lg border border-dashed border-white/10 bg-black/10 p-4 text-sm text-slate-400">
+          <div className="rounded-lg border border-dashed border-[#d9e8d4]/10 bg-[#0f1714]/55 p-4 text-sm text-slate-300">
             Le tue ultime sessioni compariranno qui.
           </div>
         )}
@@ -373,19 +365,19 @@ export function HomeDashboard() {
 
       {selectedSession ? (
         <div
-          className="fixed inset-0 z-50 flex items-end bg-black/70 px-3 pb-3 pt-10 backdrop-blur-sm"
+          className="fixed inset-0 z-50 flex items-end bg-[#050807]/75 px-3 pb-3 pt-10 backdrop-blur-sm"
           role="dialog"
           aria-modal="true"
           aria-labelledby="home-session-report-title"
           onClick={() => setSelectedSession(null)}
         >
           <section
-            className="mx-auto max-h-[88vh] w-full max-w-md overflow-y-auto rounded-lg border border-white/10 bg-[#07110e] shadow-2xl shadow-black/60"
+            className="mx-auto max-h-[88vh] w-full max-w-md overflow-y-auto rounded-lg border border-[#d9e8d4]/10 bg-[#101614] shadow-2xl shadow-[#050807]/60"
             onClick={(event) => event.stopPropagation()}
           >
-            <div className="sticky top-0 z-10 flex items-start justify-between gap-3 border-b border-white/10 bg-[#07110e]/95 p-4 backdrop-blur-xl">
+            <div className="sticky top-0 z-10 flex items-start justify-between gap-3 border-b border-[#d9e8d4]/10 bg-[#101614]/95 p-4 backdrop-blur-xl">
               <div>
-                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-emerald-200/70">
+                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#c6dcc7]/75">
                   Ultima sessione
                 </p>
                 <h2
@@ -397,7 +389,7 @@ export function HomeDashboard() {
               </div>
               <button
                 aria-label="Chiudi report sessione"
-                className="grid h-10 w-10 shrink-0 place-items-center rounded-lg border border-white/10 text-slate-300 transition hover:bg-white/10 hover:text-white"
+                className="grid h-10 w-10 shrink-0 place-items-center rounded-lg border border-[#d9e8d4]/10 text-slate-300 transition hover:bg-white/10 hover:text-white"
                 type="button"
                 onClick={() => setSelectedSession(null)}
               >
@@ -431,7 +423,7 @@ export function HomeDashboard() {
               </dl>
 
               {selectedSession.notes ? (
-                <section className="rounded-lg border border-white/10 bg-white/[0.045] p-4">
+                <section className="rounded-lg border border-[#d9e8d4]/10 bg-[#e1ecd7]/[0.05] p-4">
                   <h3 className="text-sm font-semibold text-white">Note</h3>
                   <p className="mt-2 text-sm leading-6 text-slate-300">
                     {selectedSession.notes}
@@ -446,9 +438,9 @@ export function HomeDashboard() {
                     {getCatches(selectedSession).map((catchEntry, index) => (
                       <article
                         key={`${catchEntry.id}-${index}`}
-                        className="rounded-lg border border-white/10 bg-[#0d1b18]/90 p-4"
+                        className="rounded-lg border border-[#d9e8d4]/10 bg-[#17211d]/90 p-4"
                       >
-                        <p className="text-sm font-semibold text-emerald-100">
+                        <p className="text-sm font-semibold text-[#d4e6cf]">
                           Cattura {index + 1}
                         </p>
                         <dl className="mt-3 grid grid-cols-2 gap-3">
@@ -461,7 +453,7 @@ export function HomeDashboard() {
                           <DetailItem label="Ora" value={catchEntry.time} />
                         </dl>
                         {catchEntry.notes ? (
-                          <p className="mt-3 rounded-lg bg-white/[0.045] p-3 text-sm leading-6 text-slate-300">
+                          <p className="mt-3 rounded-lg bg-[#e1ecd7]/[0.05] p-3 text-sm leading-6 text-slate-300">
                             {catchEntry.notes}
                           </p>
                         ) : null}
@@ -469,7 +461,7 @@ export function HomeDashboard() {
                     ))}
                   </div>
                 ) : (
-                  <div className="rounded-lg border border-dashed border-white/10 bg-black/10 p-4 text-sm text-slate-400">
+                  <div className="rounded-lg border border-dashed border-[#d9e8d4]/10 bg-[#0f1714]/55 p-4 text-sm text-slate-300">
                     Nessuna cattura registrata per questa sessione.
                   </div>
                 )}
