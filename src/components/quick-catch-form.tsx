@@ -147,16 +147,17 @@ export function QuickCatchForm() {
   const [manualDate, setManualDate] = useState(initialDateParts.date);
   const [manualTime, setManualTime] = useState(initialDateParts.time);
   const [manualSpot, setManualSpot] = useState("");
-  const [manualLatitude, setManualLatitude] = useState("");
-  const [manualLongitude, setManualLongitude] = useState("");
+  const [useManualCurrentLocation, setUseManualCurrentLocation] = useState(false);
 
-  useEffect(() => {
+  function requestCurrentLocation() {
     if (!window.isSecureContext && !isLocalhost()) {
+      setLocation(null);
       setLocationStatus("Posizione non disponibile: serve HTTPS o localhost.");
       return;
     }
 
     if (!navigator.geolocation) {
+      setLocation(null);
       setLocationStatus("Geolocalizzazione non disponibile su questo browser.");
       return;
     }
@@ -167,7 +168,7 @@ export function QuickCatchForm() {
           latitude: position.coords.latitude,
           longitude: position.coords.longitude,
         });
-        setLocationStatus("Spot rilevato automaticamente");
+        setLocationStatus("Posizione rilevata automaticamente");
       },
       (geolocationError) => {
         setLocation(null);
@@ -179,6 +180,10 @@ export function QuickCatchForm() {
         maximumAge: 60000,
       },
     );
+  }
+
+  useEffect(() => {
+    requestCurrentLocation();
   }, []);
 
   useEffect(() => {
@@ -212,13 +217,30 @@ export function QuickCatchForm() {
       const currentDateParts = getLocalDateParts(new Date());
       setManualDate((current) => current || currentDateParts.date);
       setManualTime((current) => current || currentDateParts.time);
+      setLocation(null);
+      setUseManualCurrentLocation(false);
+      setLocationStatus("Posizione non richiesta");
+    }
+
+    if (nextMode === "auto") {
+      setLocationStatus("Rilevo lo spot...");
+      requestCurrentLocation();
     }
   }
 
-  function parseManualCoordinate(value: string) {
-    const parsed = Number.parseFloat(value.replace(",", "."));
+  function toggleManualCurrentLocation(checked: boolean) {
+    setUseManualCurrentLocation(checked);
+    setSavedMessage("");
+    setPendingSession(null);
 
-    return Number.isFinite(parsed) ? parsed : null;
+    if (!checked) {
+      setLocation(null);
+      setLocationStatus("Posizione non richiesta");
+      return;
+    }
+
+    setLocationStatus("Rilevo la posizione...");
+    requestCurrentLocation();
   }
 
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
@@ -238,9 +260,6 @@ export function QuickCatchForm() {
 
     const now = new Date();
     const { date: autoDate, time: autoTime } = getLocalDateParts(now);
-    const manualLat = parseManualCoordinate(manualLatitude);
-    const manualLng = parseManualCoordinate(manualLongitude);
-    const hasManualCoordinates = manualLat !== null && manualLng !== null;
     const date = timeLocationMode === "manual" ? manualDate : autoDate;
     const time = timeLocationMode === "manual" ? manualTime : autoTime;
     const spotName =
@@ -252,8 +271,10 @@ export function QuickCatchForm() {
     const sessionLocation =
       timeLocationMode === "manual"
         ? {
-            latitude: hasManualCoordinates ? manualLat : null,
-            longitude: hasManualCoordinates ? manualLng : null,
+            latitude:
+              useManualCurrentLocation && location ? location.latitude : null,
+            longitude:
+              useManualCurrentLocation && location ? location.longitude : null,
           }
         : {
             latitude: location?.latitude ?? null,
@@ -467,32 +488,35 @@ export function QuickCatchForm() {
                 onChange={(event) => setManualSpot(event.target.value)}
               />
             </label>
-            <div className="grid grid-cols-2 gap-3">
-              <label className="block">
-                <span className="mb-2 text-xs font-semibold uppercase tracking-[0.14em] text-slate-300">
-                  Latitudine
-                </span>
+            <section className="rounded-lg border border-teal-700/15 bg-slate-950/45 p-3">
+              <label className="flex items-start gap-3">
                 <input
-                  className={fieldBase}
-                  inputMode="decimal"
-                  placeholder="Opzionale"
-                  value={manualLatitude}
-                  onChange={(event) => setManualLatitude(event.target.value)}
+                  checked={useManualCurrentLocation}
+                  className="mt-1 h-5 w-5 rounded border-teal-700/40 bg-slate-950 accent-teal-700"
+                  type="checkbox"
+                  onChange={(event) =>
+                    toggleManualCurrentLocation(event.target.checked)
+                  }
                 />
-              </label>
-              <label className="block">
-                <span className="mb-2 text-xs font-semibold uppercase tracking-[0.14em] text-slate-300">
-                  Longitudine
+                <span>
+                  <span className="block text-sm font-bold text-white">
+                    Posizione
+                  </span>
+                  <span className="mt-1 block text-sm text-slate-300">
+                    Usa posizione attuale (geolocalizzazione)
+                  </span>
                 </span>
-                <input
-                  className={fieldBase}
-                  inputMode="decimal"
-                  placeholder="Opzionale"
-                  value={manualLongitude}
-                  onChange={(event) => setManualLongitude(event.target.value)}
-                />
               </label>
-            </div>
+              {useManualCurrentLocation ? (
+                <p className="mt-3 text-sm font-semibold text-teal-100">
+                  {location ? "Posizione rilevata automaticamente" : locationStatus}
+                </p>
+              ) : (
+                <p className="mt-3 text-xs leading-5 text-slate-400">
+                  Se non attivi questa opzione, salvi solo il nome dello spot.
+                </p>
+              )}
+            </section>
             <p className="text-xs leading-5 text-slate-400">
               Questi dati saranno indicati nel report come inseriti manualmente.
             </p>

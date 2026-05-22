@@ -468,11 +468,10 @@ export function SessionHistory() {
                 <section className="rounded-lg border border-emerald-300/15 bg-emerald-300/5 p-4">
                   <h3 className="flex items-center gap-2 text-sm font-semibold text-emerald-100">
                     <LocateFixed aria-hidden="true" size={16} />
-                    Coordinate
+                    Posizione rilevata automaticamente
                   </h3>
                   <p className="mt-2 text-sm leading-6 text-slate-300">
-                    {selectedSession.session.latitude},{" "}
-                    {selectedSession.session.longitude}
+                    Coordinate salvate in privato sul dispositivo.
                   </p>
                   <a
                     className="mt-3 inline-flex min-h-10 w-full items-center justify-center gap-2 rounded-lg border border-emerald-300/25 bg-emerald-300/10 px-3 text-sm font-bold text-emerald-100 transition hover:bg-emerald-300/15"
