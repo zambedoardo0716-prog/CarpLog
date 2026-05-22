@@ -205,8 +205,8 @@ export function HomeDashboard() {
 
   return (
     <div className="space-y-6">
-      <section className="overflow-hidden rounded-lg border border-emerald-500/20 bg-slate-900/75 p-5 shadow-xl shadow-black/25">
-        <p className="text-xs font-semibold uppercase tracking-[0.18em] text-emerald-200">
+      <section className="overflow-hidden rounded-lg border border-teal-700/20 bg-slate-900/75 p-5 shadow-xl shadow-teal-950/25">
+        <p className="text-xs font-semibold uppercase tracking-[0.18em] text-teal-200">
           CarpLog
         </p>
         <h1 className="mt-3 text-3xl font-bold tracking-normal text-white">
@@ -217,7 +217,7 @@ export function HomeDashboard() {
         </p>
         <Link
           href="/nuova-sessione"
-          className="mt-5 inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-lg bg-emerald-500 px-4 text-sm font-bold text-slate-950 shadow-lg shadow-emerald-950/35 transition hover:bg-emerald-400"
+          className="mt-5 inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-lg bg-teal-700 px-4 text-sm font-bold text-white shadow-lg shadow-teal-950/35 transition hover:bg-teal-600"
         >
           Nuova sessione
           <ArrowRight aria-hidden="true" size={18} />
@@ -225,8 +225,8 @@ export function HomeDashboard() {
       </section>
 
       {!hasSessions ? (
-        <section className="rounded-lg border border-dashed border-emerald-500/25 bg-slate-900/70 p-4 text-center shadow-xl shadow-black/20">
-          <div className="mx-auto grid h-10 w-10 place-items-center rounded-lg bg-emerald-500/15 text-emerald-200">
+        <section className="rounded-lg border border-dashed border-teal-700/25 bg-slate-900/70 p-4 text-center shadow-xl shadow-teal-950/20">
+          <div className="mx-auto grid h-10 w-10 place-items-center rounded-lg bg-teal-700/15 text-teal-200">
             <Fish aria-hidden="true" size={21} />
           </div>
           <h2 className="mt-3 text-lg font-bold text-white">
@@ -240,11 +240,11 @@ export function HomeDashboard() {
       ) : null}
 
       {summary.latestSession ? (
-        <section className="rounded-lg border border-emerald-500/15 bg-slate-900/75 p-4 shadow-xl shadow-black/20">
+        <section className="rounded-lg border border-teal-700/15 bg-slate-900/75 p-4 shadow-xl shadow-teal-950/20">
           <div className="flex items-center justify-between gap-3">
             <h2 className="text-lg font-semibold text-white">Ultima sessione</h2>
             {hasLocation(summary.latestSession) ? (
-              <span className="inline-flex items-center gap-1 rounded-lg bg-emerald-500/15 px-2 py-1 text-xs font-bold text-emerald-200">
+              <span className="inline-flex items-center gap-1 rounded-lg bg-teal-700/15 px-2 py-1 text-xs font-bold text-teal-200">
                 <LocateFixed aria-hidden="true" size={14} />
                 GPS
               </span>
@@ -252,7 +252,7 @@ export function HomeDashboard() {
           </div>
 
           <div className="mt-4">
-            <p className="flex items-center gap-2 text-sm font-semibold text-emerald-200">
+            <p className="flex items-center gap-2 text-sm font-semibold text-teal-200">
               <CalendarDays aria-hidden="true" size={16} />
               {formatDate(summary.latestSession.session.date)}
             </p>
@@ -278,7 +278,7 @@ export function HomeDashboard() {
           </div>
 
           <button
-            className="mt-4 inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-lg border border-emerald-500/35 bg-emerald-500/15 px-4 text-sm font-bold text-emerald-100 transition hover:bg-emerald-500/20"
+            className="mt-4 inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-lg border border-teal-700/35 bg-teal-700/15 px-4 text-sm font-bold text-teal-100 transition hover:bg-teal-700/20"
             type="button"
             onClick={() => setSelectedSession(summary.latestSession)}
           >
@@ -295,9 +295,9 @@ export function HomeDashboard() {
           return (
             <article
               key={card.label}
-              className="min-h-28 rounded-lg border border-emerald-500/15 bg-slate-900/72 p-4 shadow-lg shadow-black/20"
+              className="min-h-28 rounded-lg border border-teal-700/15 bg-slate-900/72 p-4 shadow-lg shadow-teal-950/15"
             >
-              <div className="mb-3 grid h-9 w-9 place-items-center rounded-lg bg-emerald-500/15 text-emerald-200">
+              <div className="mb-3 grid h-9 w-9 place-items-center rounded-lg bg-teal-700/15 text-teal-200">
                 <Icon aria-hidden="true" size={19} />
               </div>
               <p className="text-xs font-medium text-slate-300">{card.label}</p>
@@ -313,7 +313,7 @@ export function HomeDashboard() {
         <div className="flex items-center justify-between gap-3">
           <h2 className="text-lg font-semibold text-white">Attivita recente</h2>
           <Link
-            className="inline-flex items-center gap-1 text-xs font-bold text-emerald-200"
+            className="inline-flex items-center gap-1 text-xs font-bold text-teal-200"
             href="/storico"
           >
             Storico
@@ -329,7 +329,7 @@ export function HomeDashboard() {
               return (
                 <article
                   key={entry.id}
-                  className="flex items-center justify-between gap-3 rounded-lg border border-emerald-500/15 bg-slate-900/72 p-3"
+                  className="flex items-center justify-between gap-3 rounded-lg border border-teal-700/15 bg-slate-900/72 p-3"
                 >
                   <div className="min-w-0">
                     <p className="truncate text-sm font-semibold text-white">
@@ -343,11 +343,11 @@ export function HomeDashboard() {
                     {hasLocation(entry) ? (
                       <LocateFixed
                         aria-label="Posizione salvata"
-                        className="text-emerald-200"
+                        className="text-teal-200"
                         size={16}
                       />
                     ) : null}
-                    <span className="inline-flex items-center gap-1 rounded-lg bg-emerald-500/15 px-2 py-1 text-xs font-bold text-emerald-100">
+                    <span className="inline-flex items-center gap-1 rounded-lg bg-teal-700/15 px-2 py-1 text-xs font-bold text-teal-100">
                       <Fish aria-hidden="true" size={14} />
                       {catchesCount}
                     </span>
@@ -357,7 +357,7 @@ export function HomeDashboard() {
             })}
           </div>
         ) : (
-          <div className="rounded-lg border border-dashed border-emerald-500/15 bg-slate-950/55 p-4 text-sm text-slate-300">
+          <div className="rounded-lg border border-dashed border-teal-700/15 bg-slate-950/55 p-4 text-sm text-slate-300">
             Le tue ultime sessioni compariranno qui.
           </div>
         )}
@@ -372,12 +372,12 @@ export function HomeDashboard() {
           onClick={() => setSelectedSession(null)}
         >
           <section
-            className="mx-auto max-h-[88vh] w-full max-w-md overflow-y-auto rounded-lg border border-emerald-500/15 bg-slate-950 shadow-2xl shadow-black/60"
+            className="mx-auto max-h-[88vh] w-full max-w-md overflow-y-auto rounded-lg border border-teal-700/15 bg-slate-950 shadow-2xl shadow-black/60"
             onClick={(event) => event.stopPropagation()}
           >
-            <div className="sticky top-0 z-10 flex items-start justify-between gap-3 border-b border-emerald-500/15 bg-slate-950/95 p-4 backdrop-blur-xl">
+            <div className="sticky top-0 z-10 flex items-start justify-between gap-3 border-b border-teal-700/15 bg-slate-950/95 p-4 backdrop-blur-xl">
               <div>
-                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-emerald-200">
+                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-teal-200">
                   Ultima sessione
                 </p>
                 <h2
@@ -389,7 +389,7 @@ export function HomeDashboard() {
               </div>
               <button
                 aria-label="Chiudi report sessione"
-                className="grid h-10 w-10 shrink-0 place-items-center rounded-lg border border-emerald-500/15 text-slate-300 transition hover:bg-emerald-500/10 hover:text-white"
+                className="grid h-10 w-10 shrink-0 place-items-center rounded-lg border border-teal-700/15 text-slate-300 transition hover:bg-teal-700/10 hover:text-white"
                 type="button"
                 onClick={() => setSelectedSession(null)}
               >
@@ -423,7 +423,7 @@ export function HomeDashboard() {
               </dl>
 
               {selectedSession.notes ? (
-                <section className="rounded-lg border border-emerald-500/15 bg-slate-950/45 p-4">
+                <section className="rounded-lg border border-teal-700/15 bg-slate-950/45 p-4">
                   <h3 className="text-sm font-semibold text-white">Note</h3>
                   <p className="mt-2 text-sm leading-6 text-slate-300">
                     {selectedSession.notes}
@@ -438,9 +438,9 @@ export function HomeDashboard() {
                     {getCatches(selectedSession).map((catchEntry, index) => (
                       <article
                         key={`${catchEntry.id}-${index}`}
-                        className="rounded-lg border border-emerald-500/15 bg-slate-900/75 p-4"
+                        className="rounded-lg border border-teal-700/15 bg-slate-900/75 p-4"
                       >
-                        <p className="text-sm font-semibold text-emerald-200">
+                        <p className="text-sm font-semibold text-teal-200">
                           Cattura {index + 1}
                         </p>
                         <dl className="mt-3 grid grid-cols-2 gap-3">
@@ -461,7 +461,7 @@ export function HomeDashboard() {
                     ))}
                   </div>
                 ) : (
-                  <div className="rounded-lg border border-dashed border-emerald-500/15 bg-slate-950/55 p-4 text-sm text-slate-300">
+                  <div className="rounded-lg border border-dashed border-teal-700/15 bg-slate-950/55 p-4 text-sm text-slate-300">
                     Nessuna cattura registrata per questa sessione.
                   </div>
                 )}
