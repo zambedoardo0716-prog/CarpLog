@@ -10,8 +10,8 @@ import {
   LocateFixed,
   MapPinned,
   Plus,
-  Scale,
   Trophy,
+  X,
 } from "lucide-react";
 
 type CatchEntry = {
@@ -37,7 +37,7 @@ type StoredSession = {
     temperature: string;
     waterLevel: string;
   };
-  setup: {
+  setup?: {
     bait: string;
     rig: string;
     feeding: string;
@@ -100,23 +100,25 @@ function formatDate(date: string) {
   }).format(parsedDate);
 }
 
-function getMostUsedSpot(sessions: StoredSession[]) {
-  const counts = new Map<string, number>();
+function formatSavedAt(value: string) {
+  const parsedDate = new Date(value);
 
-  sessions.forEach((entry) => {
-    const spot = entry.session?.spot?.trim();
+  if (!Number.isFinite(parsedDate.getTime())) {
+    return "Salvataggio recente";
+  }
 
-    if (!spot) {
-      return;
-    }
+  return new Intl.DateTimeFormat("it-IT", {
+    day: "2-digit",
+    month: "short",
+    hour: "2-digit",
+    minute: "2-digit",
+  }).format(parsedDate);
+}
 
-    counts.set(spot, (counts.get(spot) ?? 0) + 1);
-  });
-
-  const [spot, count] =
-    [...counts.entries()].sort((a, b) => b[1] - a[1])[0] ?? [];
-
-  return spot ? { spot, count } : null;
+function getBestWeight(catches: CatchEntry[]) {
+  return catches.reduce((best, entry) => {
+    return Math.max(best, parseWeight(entry.weight));
+  }, 0);
 }
 
 function hasLocation(entry: StoredSession) {
@@ -128,8 +130,24 @@ function hasLocation(entry: StoredSession) {
   );
 }
 
+function DetailItem({ label, value }: { label: string; value?: string | null }) {
+  if (!value) {
+    return null;
+  }
+
+  return (
+    <div className="rounded-lg bg-white/[0.045] p-3">
+      <dt className="text-xs font-medium text-slate-500">{label}</dt>
+      <dd className="mt-1 text-sm font-semibold leading-6 text-white">{value}</dd>
+    </div>
+  );
+}
+
 export function HomeDashboard() {
   const [sessions, setSessions] = useState<StoredSession[]>([]);
+  const [selectedSession, setSelectedSession] = useState<StoredSession | null>(
+    null,
+  );
 
   useEffect(() => {
     setSessions(
@@ -139,101 +157,161 @@ export function HomeDashboard() {
 
   const summary = useMemo(() => {
     const allCatches = sessions.flatMap((entry) => getCatches(entry));
-    const bestWeight = allCatches.reduce((best, entry) => {
-      return Math.max(best, parseWeight(entry.weight));
-    }, 0);
+    const spots = new Set(
+      sessions
+        .map((entry) => entry.session.spot.trim())
+        .filter((spot) => spot.length > 0),
+    );
     const latestSession = sessions[0];
-    const mostUsedSpot = getMostUsedSpot(sessions);
 
     return {
-      totalCatches: allCatches.length,
-      bestWeight,
       latestSession,
-      mostUsedSpot,
       latestSessions: sessions.slice(0, 3),
+      recentActivity: sessions.slice(0, 4),
+      totalCatches: allCatches.length,
+      totalSessions: sessions.length,
+      totalSpots: spots.size,
+      bestWeight: getBestWeight(allCatches),
     };
   }, [sessions]);
 
   const hasSessions = sessions.length > 0;
+  const latestCatches = summary.latestSession
+    ? getCatches(summary.latestSession)
+    : [];
+  const latestBestWeight = getBestWeight(latestCatches);
 
-  const stats = [
+  const statCards = [
     {
-      label: "Catture totali",
-      value: String(summary.totalCatches),
-      detail: hasSessions ? "Da sessioni salvate" : "Nessun dato",
-      icon: Trophy,
-    },
-    {
-      label: "Miglior cattura",
-      value: formatWeight(summary.bestWeight),
-      detail: summary.bestWeight > 0 ? "Record registrato" : "Nessuna cattura",
-      icon: Scale,
-    },
-    {
-      label: "Ultima sessione",
-      value: summary.latestSession
-        ? formatDate(summary.latestSession.session.date)
-        : "0",
-      detail: summary.latestSession?.session.spot || "Nessuna sessione",
+      label: "Sessioni",
+      value: String(summary.totalSessions),
       icon: CalendarDays,
     },
     {
-      label: "Spot più usato",
-      value: summary.mostUsedSpot?.spot ?? "0",
-      detail: summary.mostUsedSpot
-        ? `${summary.mostUsedSpot.count} sessioni`
-        : "Nessuno spot",
+      label: "Catture",
+      value: String(summary.totalCatches),
+      icon: Fish,
+    },
+    {
+      label: "Peso migliore",
+      value: formatWeight(summary.bestWeight),
+      icon: Trophy,
+    },
+    {
+      label: "Spot",
+      value: String(summary.totalSpots),
       icon: MapPinned,
     },
   ];
 
   return (
     <div className="space-y-6">
-      <section className="rounded-lg border border-emerald-300/15 bg-white/[0.06] p-5 shadow-xl shadow-black/20">
+      <section className="overflow-hidden rounded-lg border border-emerald-300/15 bg-white/[0.06] p-5 shadow-xl shadow-black/20">
         <p className="text-xs font-semibold uppercase tracking-[0.18em] text-emerald-200/75">
-          Dashboard
+          CarpLog
         </p>
         <h1 className="mt-3 text-3xl font-bold tracking-normal text-white">
           La tua stagione, ordinata.
         </h1>
         <p className="mt-3 text-sm leading-6 text-slate-300">
-          Riepilogo locale delle sessioni salvate su questo browser.
+          Registra sessioni, catture e spot privati in pochi tocchi.
         </p>
-
-        {!hasSessions ? (
-          <div className="mt-5 rounded-lg border border-dashed border-white/10 bg-black/10 p-4 text-sm font-medium text-slate-300">
-            Nessuna sessione ancora salvata
-          </div>
-        ) : null}
-
         <Link
           href="/nuova-sessione"
           className="mt-5 inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-lg bg-emerald-400 px-4 text-sm font-bold text-[#07110e] shadow-lg shadow-emerald-950/40 transition hover:bg-emerald-300"
         >
-          {hasSessions ? "Nuova sessione" : "Crea prima sessione"}
+          Nuova sessione
           <ArrowRight aria-hidden="true" size={18} />
         </Link>
       </section>
 
+      {!hasSessions ? (
+        <section className="rounded-lg border border-dashed border-emerald-300/20 bg-[#0d1b18]/88 p-5 text-center shadow-xl shadow-black/20">
+          <div className="mx-auto grid h-12 w-12 place-items-center rounded-lg bg-emerald-300/10 text-emerald-100">
+            <Fish aria-hidden="true" size={23} />
+          </div>
+          <h2 className="mt-4 text-xl font-bold text-white">
+            Inizia dal primo report
+          </h2>
+          <p className="mt-2 text-sm leading-6 text-slate-400">
+            Nessuna sessione ancora salvata. Crea la prima e CarpLog costruira
+            automaticamente storico e statistiche.
+          </p>
+          <Link
+            className="mt-5 inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-lg bg-emerald-400 px-4 text-sm font-bold text-[#07110e] transition hover:bg-emerald-300"
+            href="/nuova-sessione"
+          >
+            <Plus aria-hidden="true" size={18} />
+            Crea prima sessione
+          </Link>
+        </section>
+      ) : null}
+
+      {summary.latestSession ? (
+        <section className="rounded-lg border border-white/10 bg-[#0d1b18]/90 p-4 shadow-xl shadow-black/20">
+          <div className="flex items-center justify-between gap-3">
+            <h2 className="text-lg font-semibold text-white">Ultima sessione</h2>
+            {hasLocation(summary.latestSession) ? (
+              <span className="inline-flex items-center gap-1 rounded-lg bg-emerald-300/10 px-2 py-1 text-xs font-bold text-emerald-100">
+                <LocateFixed aria-hidden="true" size={14} />
+                GPS
+              </span>
+            ) : null}
+          </div>
+
+          <div className="mt-4">
+            <p className="flex items-center gap-2 text-sm font-semibold text-emerald-100">
+              <CalendarDays aria-hidden="true" size={16} />
+              {formatDate(summary.latestSession.session.date)}
+            </p>
+            <h3 className="mt-2 flex items-center gap-2 text-2xl font-bold text-white">
+              <MapPinned aria-hidden="true" size={20} />
+              {summary.latestSession.session.spot || "Spot non indicato"}
+            </h3>
+          </div>
+
+          <div className="mt-4 grid grid-cols-2 gap-3">
+            <div className="rounded-lg bg-white/[0.045] p-3">
+              <p className="text-xs text-slate-500">Catture</p>
+              <p className="mt-1 text-xl font-bold text-white">
+                {latestCatches.length}
+              </p>
+            </div>
+            <div className="rounded-lg bg-white/[0.045] p-3">
+              <p className="text-xs text-slate-500">Peso migliore</p>
+              <p className="mt-1 text-xl font-bold text-white">
+                {formatWeight(latestBestWeight)}
+              </p>
+            </div>
+          </div>
+
+          <button
+            className="mt-4 inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-lg border border-emerald-300/25 bg-emerald-300/10 px-4 text-sm font-bold text-emerald-100 transition hover:bg-emerald-300/15"
+            type="button"
+            onClick={() => setSelectedSession(summary.latestSession)}
+          >
+            Apri report
+            <History aria-hidden="true" size={17} />
+          </button>
+        </section>
+      ) : null}
+
       <section className="grid grid-cols-2 gap-3">
-        {stats.map((stat) => {
-          const Icon = stat.icon;
+        {statCards.map((card) => {
+          const Icon = card.icon;
 
           return (
             <article
-              key={stat.label}
-              className="min-h-36 rounded-lg border border-white/10 bg-[#0d1b18]/88 p-4 shadow-lg shadow-black/20"
+              key={card.label}
+              className="min-h-28 rounded-lg border border-white/10 bg-[#0d1b18]/88 p-4 shadow-lg shadow-black/20"
             >
-              <div className="mb-4 flex items-center justify-between gap-3">
-                <div className="grid h-9 w-9 place-items-center rounded-lg bg-emerald-300/10 text-emerald-200">
-                  <Icon aria-hidden="true" size={19} />
-                </div>
+              <div className="mb-3 grid h-9 w-9 place-items-center rounded-lg bg-emerald-300/10 text-emerald-200">
+                <Icon aria-hidden="true" size={19} />
               </div>
-              <p className="text-xs font-medium text-slate-400">{stat.label}</p>
-              <p className="mt-2 break-words text-2xl font-bold tracking-normal text-white">
-                {stat.value}
+              <p className="text-xs font-medium text-slate-400">{card.label}</p>
+              <p className="mt-1 break-words text-2xl font-bold tracking-normal text-white">
+                {card.value}
               </p>
-              <p className="mt-2 text-xs leading-5 text-slate-400">{stat.detail}</p>
             </article>
           );
         })}
@@ -241,7 +319,7 @@ export function HomeDashboard() {
 
       <section className="space-y-3">
         <div className="flex items-center justify-between gap-3">
-          <h2 className="text-lg font-semibold text-white">Ultime sessioni</h2>
+          <h2 className="text-lg font-semibold text-white">Attivita recente</h2>
           <Link
             className="inline-flex items-center gap-1 text-xs font-bold text-emerald-100"
             href="/storico"
@@ -251,58 +329,155 @@ export function HomeDashboard() {
           </Link>
         </div>
 
-        {summary.latestSessions.length > 0 ? (
-          <div className="space-y-3">
-            {summary.latestSessions.map((entry) => {
+        {summary.recentActivity.length > 0 ? (
+          <div className="space-y-2">
+            {summary.recentActivity.map((entry) => {
               const catchesCount = getCatches(entry).length;
 
               return (
                 <article
                   key={entry.id}
-                  className="rounded-lg border border-white/10 bg-[#0d1b18]/88 p-4 shadow-lg shadow-black/20"
+                  className="flex items-center justify-between gap-3 rounded-lg border border-white/10 bg-[#0d1b18]/88 p-3"
                 >
-                  <div className="flex items-start justify-between gap-3">
-                    <div>
-                      <p className="flex items-center gap-2 text-sm font-semibold text-emerald-100">
-                        <CalendarDays aria-hidden="true" size={16} />
-                        {formatDate(entry.session.date)}
-                      </p>
-                      <h3 className="mt-2 text-lg font-bold text-white">
-                        {entry.session.spot || "Spot non indicato"}
-                      </h3>
-                    </div>
+                  <div className="min-w-0">
+                    <p className="truncate text-sm font-semibold text-white">
+                      {entry.session.spot || "Spot non indicato"}
+                    </p>
+                    <p className="mt-1 text-xs text-slate-400">
+                      {formatSavedAt(entry.savedAt)}
+                    </p>
+                  </div>
+                  <div className="flex shrink-0 items-center gap-2">
+                    {hasLocation(entry) ? (
+                      <LocateFixed
+                        aria-label="Posizione salvata"
+                        className="text-emerald-200"
+                        size={16}
+                      />
+                    ) : null}
                     <span className="inline-flex items-center gap-1 rounded-lg bg-emerald-300/10 px-2 py-1 text-xs font-bold text-emerald-100">
                       <Fish aria-hidden="true" size={14} />
                       {catchesCount}
                     </span>
                   </div>
-                  {entry.session.duration || entry.session.weather ? (
-                    <p className="mt-3 text-sm text-slate-400">
-                      {[entry.session.duration, entry.session.weather]
-                        .filter(Boolean)
-                        .join(" - ")}
-                    </p>
-                  ) : null}
-                  {hasLocation(entry) ? (
-                    <p className="mt-3 inline-flex items-center gap-2 rounded-lg bg-emerald-300/10 px-2 py-1 text-xs font-bold text-emerald-100">
-                      <LocateFixed aria-hidden="true" size={14} />
-                      Posizione salvata
-                    </p>
-                  ) : null}
                 </article>
               );
             })}
           </div>
         ) : (
-          <Link
-            className="flex min-h-20 items-center justify-center gap-2 rounded-lg border border-dashed border-white/10 bg-black/10 px-4 text-sm font-bold text-slate-300 transition hover:bg-white/10 hover:text-white"
-            href="/nuova-sessione"
-          >
-            <Plus aria-hidden="true" size={18} />
-            Crea prima sessione
-          </Link>
+          <div className="rounded-lg border border-dashed border-white/10 bg-black/10 p-4 text-sm text-slate-400">
+            Le tue ultime sessioni compariranno qui.
+          </div>
         )}
       </section>
+
+      {selectedSession ? (
+        <div
+          className="fixed inset-0 z-50 flex items-end bg-black/70 px-3 pb-3 pt-10 backdrop-blur-sm"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="home-session-report-title"
+          onClick={() => setSelectedSession(null)}
+        >
+          <section
+            className="mx-auto max-h-[88vh] w-full max-w-md overflow-y-auto rounded-lg border border-white/10 bg-[#07110e] shadow-2xl shadow-black/60"
+            onClick={(event) => event.stopPropagation()}
+          >
+            <div className="sticky top-0 z-10 flex items-start justify-between gap-3 border-b border-white/10 bg-[#07110e]/95 p-4 backdrop-blur-xl">
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-emerald-200/70">
+                  Ultima sessione
+                </p>
+                <h2
+                  id="home-session-report-title"
+                  className="mt-1 text-2xl font-bold text-white"
+                >
+                  Report sessione
+                </h2>
+              </div>
+              <button
+                aria-label="Chiudi report sessione"
+                className="grid h-10 w-10 shrink-0 place-items-center rounded-lg border border-white/10 text-slate-300 transition hover:bg-white/10 hover:text-white"
+                type="button"
+                onClick={() => setSelectedSession(null)}
+              >
+                <X aria-hidden="true" size={19} />
+              </button>
+            </div>
+
+            <div className="space-y-5 p-4">
+              <dl className="grid grid-cols-2 gap-3">
+                <DetailItem
+                  label="Data"
+                  value={formatDate(selectedSession.session.date)}
+                />
+                <DetailItem label="Spot" value={selectedSession.session.spot} />
+                <DetailItem
+                  label="Durata"
+                  value={selectedSession.session.duration}
+                />
+                <DetailItem label="Meteo" value={selectedSession.session.weather} />
+                <DetailItem label="Vento" value={selectedSession.session.wind} />
+                <DetailItem
+                  label="Temperatura"
+                  value={selectedSession.session.temperature}
+                />
+                <DetailItem
+                  label="Livello acqua"
+                  value={selectedSession.session.waterLevel}
+                />
+                <DetailItem label="Esca" value={selectedSession.setup?.bait} />
+                <DetailItem label="Rig" value={selectedSession.setup?.rig} />
+              </dl>
+
+              {selectedSession.notes ? (
+                <section className="rounded-lg border border-white/10 bg-white/[0.045] p-4">
+                  <h3 className="text-sm font-semibold text-white">Note</h3>
+                  <p className="mt-2 text-sm leading-6 text-slate-300">
+                    {selectedSession.notes}
+                  </p>
+                </section>
+              ) : null}
+
+              <section className="space-y-3">
+                <h3 className="text-lg font-semibold text-white">Catture</h3>
+                {getCatches(selectedSession).length > 0 ? (
+                  <div className="space-y-3">
+                    {getCatches(selectedSession).map((catchEntry, index) => (
+                      <article
+                        key={`${catchEntry.id}-${index}`}
+                        className="rounded-lg border border-white/10 bg-[#0d1b18]/90 p-4"
+                      >
+                        <p className="text-sm font-semibold text-emerald-100">
+                          Cattura {index + 1}
+                        </p>
+                        <dl className="mt-3 grid grid-cols-2 gap-3">
+                          <DetailItem label="Peso" value={catchEntry.weight} />
+                          <DetailItem
+                            label="Lunghezza"
+                            value={catchEntry.length}
+                          />
+                          <DetailItem label="Esca" value={catchEntry.bait} />
+                          <DetailItem label="Ora" value={catchEntry.time} />
+                        </dl>
+                        {catchEntry.notes ? (
+                          <p className="mt-3 rounded-lg bg-white/[0.045] p-3 text-sm leading-6 text-slate-300">
+                            {catchEntry.notes}
+                          </p>
+                        ) : null}
+                      </article>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="rounded-lg border border-dashed border-white/10 bg-black/10 p-4 text-sm text-slate-400">
+                    Nessuna cattura registrata per questa sessione.
+                  </div>
+                )}
+              </section>
+            </div>
+          </section>
+        </div>
+      ) : null}
     </div>
   );
 }
