@@ -4,12 +4,15 @@ import Link from "next/link";
 import { type FormEvent, useEffect, useRef, useState } from "react";
 import {
   Camera,
+  CalendarDays,
   Check,
   ChevronRight,
   CloudSun,
+  Clock,
   Fish,
   Gauge,
   LocateFixed,
+  MapPinned,
   NotebookText,
   Save,
 } from "lucide-react";
@@ -27,6 +30,8 @@ type QuickCatchFormState = {
   notes: string;
   photoName: string;
 };
+
+type TimeLocationMode = "auto" | "manual";
 
 type StoredSession = {
   id: string;
@@ -48,6 +53,9 @@ type StoredSession = {
     feeding: string;
   };
   notes: string;
+  captureMetadata?: {
+    timeLocationMode: TimeLocationMode;
+  };
   catches: Array<{
     id: number;
     weight: string;
@@ -55,6 +63,7 @@ type StoredSession = {
     bait: string;
     time: string;
     notes: string;
+    quickCatch?: boolean;
     photoName?: string;
   }>;
 };
@@ -118,6 +127,7 @@ function getGeolocationErrorMessage(error: GeolocationPositionError) {
 
 export function QuickCatchForm() {
   const formRef = useRef<HTMLFormElement>(null);
+  const initialDateParts = getLocalDateParts(new Date());
   const [form, setForm] = useState<QuickCatchFormState>({
     weight: "",
     bait: "",
@@ -131,6 +141,14 @@ export function QuickCatchForm() {
   const [error, setError] = useState("");
   const [savedMessage, setSavedMessage] = useState("");
   const [pendingSession, setPendingSession] = useState<StoredSession | null>(null);
+  const [timeLocationMode, setTimeLocationMode] =
+    useState<TimeLocationMode>("auto");
+  const [detectedTime, setDetectedTime] = useState(initialDateParts.time);
+  const [manualDate, setManualDate] = useState(initialDateParts.date);
+  const [manualTime, setManualTime] = useState(initialDateParts.time);
+  const [manualSpot, setManualSpot] = useState("");
+  const [manualLatitude, setManualLatitude] = useState("");
+  const [manualLongitude, setManualLongitude] = useState("");
 
   useEffect(() => {
     if (!window.isSecureContext && !isLocalhost()) {
@@ -163,6 +181,15 @@ export function QuickCatchForm() {
     );
   }, []);
 
+  useEffect(() => {
+    const updateDetectedTime = () => {
+      setDetectedTime(getLocalDateParts(new Date()).time);
+    };
+    const intervalId = window.setInterval(updateDetectedTime, 30000);
+
+    return () => window.clearInterval(intervalId);
+  }, []);
+
   function updateField(field: keyof QuickCatchFormState, value: string) {
     if (field === "weight") {
       setError("");
@@ -176,6 +203,24 @@ export function QuickCatchForm() {
     }));
   }
 
+  function updateTimeLocationMode(nextMode: TimeLocationMode) {
+    setTimeLocationMode(nextMode);
+    setSavedMessage("");
+    setPendingSession(null);
+
+    if (nextMode === "manual") {
+      const currentDateParts = getLocalDateParts(new Date());
+      setManualDate((current) => current || currentDateParts.date);
+      setManualTime((current) => current || currentDateParts.time);
+    }
+  }
+
+  function parseManualCoordinate(value: string) {
+    const parsed = Number.parseFloat(value.replace(",", "."));
+
+    return Number.isFinite(parsed) ? parsed : null;
+  }
+
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
@@ -186,9 +231,34 @@ export function QuickCatchForm() {
       return;
     }
 
+    if (timeLocationMode === "manual" && (!manualDate || !manualTime)) {
+      setError("Inserisci data e ora della cattura.");
+      return;
+    }
+
     const now = new Date();
-    const { date, time } = getLocalDateParts(now);
-    const spotName = location ? "Posizione attuale" : "Cattura rapida";
+    const { date: autoDate, time: autoTime } = getLocalDateParts(now);
+    const manualLat = parseManualCoordinate(manualLatitude);
+    const manualLng = parseManualCoordinate(manualLongitude);
+    const hasManualCoordinates = manualLat !== null && manualLng !== null;
+    const date = timeLocationMode === "manual" ? manualDate : autoDate;
+    const time = timeLocationMode === "manual" ? manualTime : autoTime;
+    const spotName =
+      timeLocationMode === "manual"
+        ? manualSpot.trim() || "Spot inserito manualmente"
+        : location
+          ? "Posizione attuale"
+          : "Cattura rapida";
+    const sessionLocation =
+      timeLocationMode === "manual"
+        ? {
+            latitude: hasManualCoordinates ? manualLat : null,
+            longitude: hasManualCoordinates ? manualLng : null,
+          }
+        : {
+            latitude: location?.latitude ?? null,
+            longitude: location?.longitude ?? null,
+          };
     const notes = form.photoName
       ? [form.notes.trim(), `Foto: ${form.photoName}`].filter(Boolean).join("\n")
       : form.notes.trim();
@@ -200,8 +270,8 @@ export function QuickCatchForm() {
         date,
         duration: "",
         spot: spotName,
-        latitude: location?.latitude ?? null,
-        longitude: location?.longitude ?? null,
+        latitude: sessionLocation.latitude,
+        longitude: sessionLocation.longitude,
         weather: form.weather,
         wind: "",
         temperature: "",
@@ -213,6 +283,9 @@ export function QuickCatchForm() {
         feeding: "",
       },
       notes,
+      captureMetadata: {
+        timeLocationMode,
+      },
       catches: [
         {
           id: Date.now(),
@@ -221,6 +294,7 @@ export function QuickCatchForm() {
           bait: form.bait,
           time,
           notes,
+          quickCatch: true,
           photoName: form.photoName || undefined,
         },
       ],
@@ -247,9 +321,11 @@ export function QuickCatchForm() {
     });
     setError("");
     setSavedMessage(
-      location
-        ? "Cattura pronta con ora e posizione"
-        : "Cattura pronta con ora automatica",
+      timeLocationMode === "manual"
+        ? "Cattura pronta con dati manuali"
+        : location
+          ? "Cattura pronta con ora e posizione"
+          : "Cattura pronta con ora automatica",
     );
   }
 
@@ -297,17 +373,131 @@ export function QuickCatchForm() {
             {error}
           </p>
         ) : null}
+      </section>
 
-        <div className="mt-4 grid gap-2 rounded-lg border border-teal-700/15 bg-slate-950/45 p-3 text-sm text-slate-300">
-          <p className="flex items-center gap-2">
-            <Check aria-hidden="true" className="text-teal-200" size={16} />
-            Data e ora vengono salvate automaticamente
-          </p>
-          <p className="flex items-center gap-2">
-            <LocateFixed aria-hidden="true" className="text-teal-200" size={16} />
-            {locationStatus}
-          </p>
+      <section className="rounded-lg border border-teal-700/20 bg-slate-900/75 p-4 shadow-xl shadow-teal-950/20">
+        <h2 className="text-base font-bold text-white">
+          Quando e dove e stata presa?
+        </h2>
+        <div className="mt-4 grid grid-cols-2 gap-2 rounded-lg border border-teal-700/15 bg-slate-950/45 p-1">
+          <button
+            className={`min-h-11 rounded-md px-3 text-xs font-bold transition ${
+              timeLocationMode === "auto"
+                ? "bg-teal-700 text-white shadow-lg shadow-teal-950/25"
+                : "text-slate-300 hover:bg-teal-700/10 hover:text-white"
+            }`}
+            type="button"
+            onClick={() => updateTimeLocationMode("auto")}
+          >
+            Adesso / posizione attuale
+          </button>
+          <button
+            className={`min-h-11 rounded-md px-3 text-xs font-bold transition ${
+              timeLocationMode === "manual"
+                ? "bg-teal-700 text-white shadow-lg shadow-teal-950/25"
+                : "text-slate-300 hover:bg-teal-700/10 hover:text-white"
+            }`}
+            type="button"
+            onClick={() => updateTimeLocationMode("manual")}
+          >
+            Inserisci manualmente
+          </button>
         </div>
+
+        {timeLocationMode === "auto" ? (
+          <div className="mt-4 grid gap-2 rounded-lg border border-teal-700/15 bg-slate-950/45 p-3 text-sm text-slate-300">
+            <p className="flex items-center gap-2">
+              <Clock aria-hidden="true" className="text-teal-200" size={16} />
+              Ora: <span className="font-semibold text-white">{detectedTime}</span>
+            </p>
+            <p className="flex items-center gap-2">
+              <LocateFixed
+                aria-hidden="true"
+                className="text-teal-200"
+                size={16}
+              />
+              Posizione:{" "}
+              <span className="font-semibold text-white">
+                {location ? "salvata" : "non disponibile"}
+              </span>
+            </p>
+            <p className="text-xs leading-5 text-slate-400">{locationStatus}</p>
+            <p className="text-xs leading-5 text-slate-400">
+              Questi dati saranno indicati nel report come rilevati
+              automaticamente.
+            </p>
+          </div>
+        ) : (
+          <div className="mt-4 grid gap-3">
+            <div className="grid grid-cols-2 gap-3">
+              <label className="block">
+                <span className="mb-2 flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.14em] text-slate-300">
+                  <CalendarDays aria-hidden="true" size={15} />
+                  Data
+                </span>
+                <input
+                  className={fieldBase}
+                  type="date"
+                  value={manualDate}
+                  onChange={(event) => setManualDate(event.target.value)}
+                />
+              </label>
+              <label className="block">
+                <span className="mb-2 flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.14em] text-slate-300">
+                  <Clock aria-hidden="true" size={15} />
+                  Ora
+                </span>
+                <input
+                  className={fieldBase}
+                  type="time"
+                  value={manualTime}
+                  onChange={(event) => setManualTime(event.target.value)}
+                />
+              </label>
+            </div>
+            <label className="block">
+              <span className="mb-2 flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.14em] text-slate-300">
+                <MapPinned aria-hidden="true" size={15} />
+                Spot
+              </span>
+              <input
+                className={fieldBase}
+                placeholder="Nome spot o postazione"
+                value={manualSpot}
+                onChange={(event) => setManualSpot(event.target.value)}
+              />
+            </label>
+            <div className="grid grid-cols-2 gap-3">
+              <label className="block">
+                <span className="mb-2 text-xs font-semibold uppercase tracking-[0.14em] text-slate-300">
+                  Latitudine
+                </span>
+                <input
+                  className={fieldBase}
+                  inputMode="decimal"
+                  placeholder="Opzionale"
+                  value={manualLatitude}
+                  onChange={(event) => setManualLatitude(event.target.value)}
+                />
+              </label>
+              <label className="block">
+                <span className="mb-2 text-xs font-semibold uppercase tracking-[0.14em] text-slate-300">
+                  Longitudine
+                </span>
+                <input
+                  className={fieldBase}
+                  inputMode="decimal"
+                  placeholder="Opzionale"
+                  value={manualLongitude}
+                  onChange={(event) => setManualLongitude(event.target.value)}
+                />
+              </label>
+            </div>
+            <p className="text-xs leading-5 text-slate-400">
+              Questi dati saranno indicati nel report come inseriti manualmente.
+            </p>
+          </div>
+        )}
       </section>
 
       <section className="rounded-lg border border-teal-700/15 bg-slate-900/70 p-4 shadow-lg shadow-teal-950/15">
@@ -406,38 +596,48 @@ export function QuickCatchForm() {
       </button>
 
       {savedMessage ? (
-        <section
-          className="rounded-lg border border-teal-700/25 bg-slate-900/80 p-4 shadow-xl shadow-teal-950/20"
-          role="status"
+        <div
+          className="fixed inset-0 z-50 flex items-end bg-black/75 px-3 pb-3 pt-10 backdrop-blur-sm"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="quick-catch-saved-title"
         >
-          <div className="flex items-start gap-3">
-            <span className="grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-teal-700 text-white">
-              <Check aria-hidden="true" size={19} strokeWidth={2.6} />
-            </span>
-            <div>
-              <p className="font-bold text-white">{savedMessage}</p>
-              <p className="mt-1 text-sm leading-6 text-slate-300">
-                Vuoi aggiungere dettagli alla sessione?
-              </p>
+          <section className="mx-auto w-full max-w-md rounded-lg border border-teal-700/25 bg-slate-950 p-4 shadow-2xl shadow-black/60">
+            <div className="mx-auto mb-3 h-1 w-12 rounded-full bg-slate-700" />
+            <div className="flex items-start gap-3">
+              <span className="grid h-10 w-10 shrink-0 place-items-center rounded-lg bg-teal-700 text-white">
+                <Check aria-hidden="true" size={20} strokeWidth={2.6} />
+              </span>
+              <div>
+                <h2 id="quick-catch-saved-title" className="text-xl font-bold text-white">
+                  Cattura salvata
+                </h2>
+                <p className="mt-2 text-sm leading-6 text-slate-300">
+                  Vuoi aggiungere dettagli alla sessione?
+                </p>
+              </div>
             </div>
-          </div>
-          <div className="mt-4 grid gap-2">
-            <Link
-              className="inline-flex min-h-11 items-center justify-center gap-2 rounded-lg border border-teal-700/35 bg-teal-700/15 px-4 text-sm font-bold text-teal-100 transition hover:bg-teal-700/20"
-              href="/nuova-sessione?quickCatchDraft=1"
-            >
-              Aggiungi dettagli avanzati
-              <ChevronRight aria-hidden="true" size={17} />
-            </Link>
-            <button
-              className="inline-flex min-h-11 items-center justify-center rounded-lg border border-white/10 bg-slate-950/45 px-4 text-sm font-bold text-slate-200 transition hover:bg-white/10"
-              type="button"
-              onClick={savePendingSession}
-            >
-              Non ora
-            </button>
-          </div>
-        </section>
+            <p className="mt-4 rounded-lg border border-teal-700/15 bg-teal-700/10 p-3 text-sm font-semibold text-teal-100">
+              {savedMessage}
+            </p>
+            <div className="mt-4 grid gap-2">
+              <Link
+                className="inline-flex min-h-12 items-center justify-center gap-2 rounded-lg bg-teal-700 px-4 text-sm font-bold text-white shadow-lg shadow-teal-950/35 transition hover:bg-teal-600"
+                href="/nuova-sessione?quickCatchDraft=1"
+              >
+                Aggiungi dettagli
+                <ChevronRight aria-hidden="true" size={17} />
+              </Link>
+              <button
+                className="inline-flex min-h-12 items-center justify-center rounded-lg border border-white/10 bg-slate-900 px-4 text-sm font-bold text-slate-200 transition hover:bg-white/10"
+                type="button"
+                onClick={savePendingSession}
+              >
+                Non ora
+              </button>
+            </div>
+          </section>
+        </div>
       ) : null}
     </form>
   );

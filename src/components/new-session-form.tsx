@@ -35,6 +35,7 @@ type CatchEntry = {
   bait: string;
   time: string;
   notes: string;
+  quickCatch?: boolean;
 };
 
 type SpotLocation = {
@@ -62,6 +63,9 @@ type StoredSession = {
     feeding: string;
   };
   notes: string;
+  captureMetadata?: {
+    timeLocationMode: "auto" | "manual";
+  };
   catches: CatchEntry[];
 };
 
@@ -186,6 +190,10 @@ export function NewSessionForm() {
   const [locationMessage, setLocationMessage] = useState("");
   const [saveError, setSaveError] = useState("");
   const [saveMessage, setSaveMessage] = useState("");
+  const [quickDraftLoaded, setQuickDraftLoaded] = useState(false);
+  const [quickDraftTimeLocationMode, setQuickDraftTimeLocationMode] = useState<
+    "auto" | "manual" | null
+  >(null);
 
   useEffect(() => {
     const shouldLoadQuickDraft =
@@ -228,7 +236,18 @@ export function NewSessionForm() {
       setFormValue("feeding", draft.setup.feeding);
       setFormValue("notes", draft.notes);
 
-      setCatches(Array.isArray(draft.catches) ? draft.catches : []);
+      setCatches(
+        Array.isArray(draft.catches)
+          ? draft.catches.map((entry) => ({
+              ...entry,
+              quickCatch: true,
+            }))
+          : [],
+      );
+      setQuickDraftLoaded(true);
+      setQuickDraftTimeLocationMode(
+        draft.captureMetadata?.timeLocationMode ?? null,
+      );
 
       if (
         typeof draft.session.latitude === "number" &&
@@ -407,6 +426,11 @@ export function NewSessionForm() {
         feeding: String(formData.get("feeding") ?? ""),
       },
       notes: String(formData.get("notes") ?? ""),
+      captureMetadata: quickDraftTimeLocationMode
+        ? {
+            timeLocationMode: quickDraftTimeLocationMode,
+          }
+        : undefined,
       catches: catchesToSave,
     };
 
@@ -436,6 +460,8 @@ export function NewSessionForm() {
 
     formRef.current?.reset();
     setCatches([]);
+    setQuickDraftLoaded(false);
+    setQuickDraftTimeLocationMode(null);
     setDraftCatch({
       weight: "",
       length: "",
@@ -476,6 +502,21 @@ export function NewSessionForm() {
               {saveMessage}
             </span>
           </span>
+        </div>
+      ) : null}
+
+      {quickDraftLoaded ? (
+        <div
+          className="rounded-lg border border-teal-300/30 bg-teal-400/10 p-4 shadow-xl shadow-teal-950/20"
+          role="status"
+        >
+          <p className="flex items-center gap-2 text-sm font-bold text-teal-100">
+            <Check aria-hidden="true" size={17} strokeWidth={2.6} />
+            Cattura gia aggiunta alla sessione
+          </p>
+          <p className="mt-2 text-sm leading-6 text-slate-300">
+            Puoi completare i dettagli senza reinserire il pesce.
+          </p>
         </div>
       ) : null}
 
@@ -607,6 +648,17 @@ export function NewSessionForm() {
 
       <Section title="Catture">
         <div className="grid gap-4">
+          {quickDraftLoaded && catches.length > 0 ? (
+            <div className="rounded-lg border border-teal-300/35 bg-teal-400/10 p-4 shadow-lg shadow-teal-950/20">
+              <p className="text-xs font-bold uppercase tracking-[0.16em] text-teal-100">
+                Gia inserita
+              </p>
+              <p className="mt-2 text-sm font-semibold text-white">
+                La cattura rapida e gia nella lista qui sotto.
+              </p>
+            </div>
+          ) : null}
+
           <div className="grid grid-cols-2 gap-3">
             <Field label="Peso" icon={Gauge}>
               <input
@@ -681,12 +733,21 @@ export function NewSessionForm() {
               {catches.map((entry, index) => (
                 <article
                   key={entry.id}
-                  className="rounded-lg border border-emerald-300/15 bg-[#0b1715] p-4"
+                  className={`rounded-lg border p-4 ${
+                    entry.quickCatch
+                      ? "border-teal-300/40 bg-teal-400/10 shadow-lg shadow-teal-950/20"
+                      : "border-emerald-300/15 bg-[#0b1715]"
+                  }`}
                 >
                   <div className="flex items-start justify-between gap-3">
                     <div>
                       <p className="text-sm font-semibold text-emerald-100">
                         Cattura {index + 1}
+                        {entry.quickCatch ? (
+                          <span className="ml-2 rounded-full bg-teal-300/15 px-2 py-0.5 text-[0.68rem] font-bold uppercase tracking-[0.12em] text-teal-100">
+                            Rapida
+                          </span>
+                        ) : null}
                       </p>
                       <p className="mt-1 text-xs text-slate-400">
                         {entry.time || "Ora non indicata"}

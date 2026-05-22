@@ -42,6 +42,9 @@ type StoredSession = {
     feeding: string;
   };
   notes: string;
+  captureMetadata?: {
+    timeLocationMode: "auto" | "manual";
+  };
   catches: CatchEntry[];
 };
 
@@ -127,6 +130,18 @@ function hasLocation(entry: StoredSession) {
     typeof entry.session.longitude === "number" &&
     Number.isFinite(entry.session.longitude)
   );
+}
+
+function getCaptureDataSourceLabel(entry: StoredSession) {
+  if (entry.captureMetadata?.timeLocationMode === "auto") {
+    return "Dati rilevati automaticamente";
+  }
+
+  if (entry.captureMetadata?.timeLocationMode === "manual") {
+    return "Dati inseriti manualmente";
+  }
+
+  return "";
 }
 
 function DetailItem({ label, value }: { label: string; value?: string | null }) {
@@ -408,6 +423,10 @@ export function HomeDashboard() {
                 <DetailItem
                   label="Data"
                   value={formatDate(selectedSession.session.date)}
+                />
+                <DetailItem
+                  label="Origine dati"
+                  value={getCaptureDataSourceLabel(selectedSession)}
                 />
                 <DetailItem label="Spot" value={selectedSession.session.spot} />
                 <DetailItem

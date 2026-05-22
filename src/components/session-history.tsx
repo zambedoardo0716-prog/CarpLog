@@ -45,6 +45,9 @@ type StoredSession = {
     feeding: string;
   };
   notes: string;
+  captureMetadata?: {
+    timeLocationMode: "auto" | "manual";
+  };
   catches: CatchEntry[];
 };
 
@@ -126,6 +129,18 @@ function hasLocation(entry: StoredSession) {
 
 function getMapsUrl(entry: StoredSession) {
   return `https://www.google.com/maps?q=${entry.session.latitude},${entry.session.longitude}`;
+}
+
+function getCaptureDataSourceLabel(entry: StoredSession) {
+  if (entry.captureMetadata?.timeLocationMode === "auto") {
+    return "Dati rilevati automaticamente";
+  }
+
+  if (entry.captureMetadata?.timeLocationMode === "manual") {
+    return "Dati inseriti manualmente";
+  }
+
+  return "";
 }
 
 function debugLog(message: string, payload?: unknown) {
@@ -404,6 +419,10 @@ export function SessionHistory() {
                 <DetailItem
                   label="Data"
                   value={formatDate(selectedSession.session.date)}
+                />
+                <DetailItem
+                  label="Origine dati"
+                  value={getCaptureDataSourceLabel(selectedSession)}
                 />
                 <DetailItem label="Spot" value={selectedSession.session.spot} />
                 <DetailItem
