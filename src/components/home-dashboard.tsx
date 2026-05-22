@@ -216,11 +216,17 @@ export function HomeDashboard() {
           Registra sessioni, catture e spot privati in pochi tocchi.
         </p>
         <Link
-          href="/nuova-sessione"
+          href="/nuova-cattura"
           className="mt-5 inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-lg bg-teal-700 px-4 text-sm font-bold text-white shadow-lg shadow-teal-950/35 transition hover:bg-teal-600"
         >
-          Nuova sessione
+          Nuova cattura
           <ArrowRight aria-hidden="true" size={18} />
+        </Link>
+        <Link
+          href="/nuova-sessione"
+          className="mt-3 inline-flex min-h-10 w-full items-center justify-center rounded-lg border border-teal-700/20 bg-slate-950/35 px-4 text-xs font-bold text-teal-100 transition hover:bg-teal-700/10"
+        >
+          Nuova sessione completa
         </Link>
       </section>
 

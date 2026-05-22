@@ -15,7 +15,7 @@ export type NavItem = {
 
 export const navigation: NavItem[] = [
   { href: "/", label: "Home", icon: Home },
-  { href: "/nuova-sessione", label: "Nuova", icon: PlusCircle },
+  { href: "/nuova-cattura", label: "Cattura", icon: PlusCircle },
   { href: "/storico", label: "Storico", icon: History },
   { href: "/statistiche", label: "Stats", icon: BarChart3 },
   { href: "/spot", label: "Spot", icon: MapPinned },
