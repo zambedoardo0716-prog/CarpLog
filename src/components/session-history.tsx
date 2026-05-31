@@ -10,7 +10,9 @@ import {
   Fish,
   LocateFixed,
   MapPinned,
+  Pencil,
   Plus,
+  Save,
   Scale,
   Trash2,
   X,
@@ -176,6 +178,7 @@ export function SessionHistory() {
   const [selectedSession, setSelectedSession] = useState<StoredSession | null>(
     null,
   );
+  const [editingSession, setEditingSession] = useState<StoredSession | null>(null);
 
   useEffect(() => {
     setSessions(
@@ -203,7 +206,166 @@ export function SessionHistory() {
     setSessions(updatedSessions);
     if (selectedSession?.id === id) {
       setSelectedSession(null);
+      setEditingSession(null);
     }
+    localStorage.setItem("carplog:sessions", JSON.stringify(updatedSessions));
+  }
+
+  function startEditingSession(entry: StoredSession) {
+    setEditingSession({
+      ...entry,
+      session: {
+        date: entry.session.date ?? "",
+        duration: entry.session.duration ?? "",
+        spot: entry.session.spot ?? "",
+        latitude: entry.session.latitude ?? null,
+        longitude: entry.session.longitude ?? null,
+        weather: entry.session.weather ?? "",
+        wind: entry.session.wind ?? "",
+        temperature: entry.session.temperature ?? "",
+        waterLevel: entry.session.waterLevel ?? "",
+      },
+      setup: {
+        bait: entry.setup?.bait ?? "",
+        rig: entry.setup?.rig ?? "",
+        feeding: entry.setup?.feeding ?? "",
+      },
+      notes: entry.notes ?? "",
+      catches: getCatches(entry).map((catchEntry) => ({ ...catchEntry })),
+    });
+  }
+
+  function updateEditingSessionField(
+    field: keyof StoredSession["session"],
+    value: string,
+  ) {
+    setEditingSession((current) =>
+      current
+        ? {
+            ...current,
+            session: {
+              ...current.session,
+              [field]: value,
+            },
+          }
+        : current,
+    );
+  }
+
+  function updateEditingSetupField(
+    field: keyof StoredSession["setup"],
+    value: string,
+  ) {
+    setEditingSession((current) =>
+      current
+        ? {
+            ...current,
+            setup: {
+              ...current.setup,
+              [field]: value,
+            },
+          }
+        : current,
+    );
+  }
+
+  function updateEditingCatch(
+    index: number,
+    field: keyof CatchEntry,
+    value: string,
+  ) {
+    setEditingSession((current) => {
+      if (!current) {
+        return current;
+      }
+
+      const nextCatches = current.catches.map((entry, entryIndex) =>
+        entryIndex === index
+          ? {
+              ...entry,
+              [field]: field === "id" ? Number(value) : value,
+            }
+          : entry,
+      );
+
+      return {
+        ...current,
+        catches: nextCatches,
+      };
+    });
+  }
+
+  function addEditingCatch() {
+    setEditingSession((current) =>
+      current
+        ? {
+            ...current,
+            catches: [
+              ...current.catches,
+              {
+                id: Date.now(),
+                weight: "",
+                length: "",
+                bait: "",
+                time: "",
+                notes: "",
+              },
+            ],
+          }
+        : current,
+    );
+  }
+
+  function removeEditingCatch(index: number) {
+    setEditingSession((current) =>
+      current
+        ? {
+            ...current,
+            catches: current.catches.filter((_, entryIndex) => entryIndex !== index),
+          }
+        : current,
+    );
+  }
+
+  function clearEditingLocation() {
+    setEditingSession((current) =>
+      current
+        ? {
+            ...current,
+            session: {
+              ...current.session,
+              latitude: null,
+              longitude: null,
+            },
+          }
+        : current,
+    );
+  }
+
+  function saveEditingSession() {
+    if (!editingSession) {
+      return;
+    }
+
+    const updatedSession = {
+      ...editingSession,
+      catches: editingSession.catches.filter((entry) => {
+        return (
+          entry.weight.trim() ||
+          entry.length.trim() ||
+          entry.bait.trim() ||
+          entry.time.trim() ||
+          entry.notes.trim()
+        );
+      }),
+    };
+    const updatedSessions = sessions.map((entry) =>
+      entry.id === updatedSession.id ? updatedSession : entry,
+    );
+
+    setSessions(updatedSessions);
+    setSelectedSession(updatedSession);
+    setEditingSession(null);
     localStorage.setItem("carplog:sessions", JSON.stringify(updatedSessions));
   }
 
@@ -386,7 +548,10 @@ export function SessionHistory() {
           role="dialog"
           aria-modal="true"
           aria-labelledby="session-report-title"
-          onClick={() => setSelectedSession(null)}
+          onClick={() => {
+            setSelectedSession(null);
+            setEditingSession(null);
+          }}
         >
           <section
             className="mx-auto max-h-[88vh] w-full max-w-md overflow-y-auto rounded-lg border border-white/10 bg-[#07110e] shadow-2xl shadow-black/60"
@@ -395,26 +560,270 @@ export function SessionHistory() {
             <div className="sticky top-0 z-10 flex items-start justify-between gap-3 border-b border-white/10 bg-[#07110e]/95 p-4 backdrop-blur-xl">
               <div>
                 <p className="text-xs font-semibold uppercase tracking-[0.18em] text-emerald-200/70">
-                  Dettaglio
+                  {editingSession ? "Modifica" : "Dettaglio"}
                 </p>
                 <h2
                   id="session-report-title"
                   className="mt-1 text-2xl font-bold text-white"
                 >
-                  Report sessione
+                  {editingSession ? "Modifica sessione" : "Report sessione"}
                 </h2>
               </div>
+              {!editingSession ? (
+                <button
+                  className="inline-flex min-h-10 shrink-0 items-center justify-center gap-2 rounded-lg border border-emerald-300/25 bg-emerald-300/10 px-3 text-xs font-bold text-emerald-100"
+                  type="button"
+                  onClick={() => startEditingSession(selectedSession)}
+                >
+                  <Pencil aria-hidden="true" size={15} />
+                  Modifica
+                </button>
+              ) : null}
               <button
                 aria-label="Chiudi report sessione"
                 className="grid h-10 w-10 shrink-0 place-items-center rounded-lg border border-white/10 text-slate-300 transition hover:bg-white/10 hover:text-white"
                 type="button"
-                onClick={() => setSelectedSession(null)}
+                onClick={() => {
+                  setSelectedSession(null);
+                  setEditingSession(null);
+                }}
               >
                 <X aria-hidden="true" size={19} />
               </button>
             </div>
 
-            <div className="space-y-5 p-4">
+            {editingSession ? (
+              <div className="space-y-5 p-4">
+                <section className="rounded-lg border border-emerald-300/15 bg-emerald-300/5 p-4">
+                  <h3 className="text-lg font-semibold text-white">
+                    Modifica sessione
+                  </h3>
+                  <div className="mt-4 grid gap-3">
+                    <div className="grid grid-cols-2 gap-3">
+                      <input
+                        className="min-h-12 rounded-lg border border-white/10 bg-[#07110e]/80 px-3 text-sm text-white outline-none"
+                        type="date"
+                        value={editingSession.session.date}
+                        onChange={(event) =>
+                          updateEditingSessionField("date", event.target.value)
+                        }
+                      />
+                      <input
+                        className="min-h-12 rounded-lg border border-white/10 bg-[#07110e]/80 px-3 text-sm text-white outline-none"
+                        placeholder="Durata"
+                        value={editingSession.session.duration}
+                        onChange={(event) =>
+                          updateEditingSessionField("duration", event.target.value)
+                        }
+                      />
+                    </div>
+                    <input
+                      className="min-h-12 rounded-lg border border-white/10 bg-[#07110e]/80 px-3 text-sm text-white outline-none"
+                      placeholder="Spot"
+                      value={editingSession.session.spot}
+                      onChange={(event) =>
+                        updateEditingSessionField("spot", event.target.value)
+                      }
+                    />
+                    <div className="grid grid-cols-2 gap-3">
+                      <input
+                        className="min-h-12 rounded-lg border border-white/10 bg-[#07110e]/80 px-3 text-sm text-white outline-none"
+                        placeholder="Meteo"
+                        value={editingSession.session.weather}
+                        onChange={(event) =>
+                          updateEditingSessionField("weather", event.target.value)
+                        }
+                      />
+                      <input
+                        className="min-h-12 rounded-lg border border-white/10 bg-[#07110e]/80 px-3 text-sm text-white outline-none"
+                        placeholder="Vento"
+                        value={editingSession.session.wind}
+                        onChange={(event) =>
+                          updateEditingSessionField("wind", event.target.value)
+                        }
+                      />
+                    </div>
+                    <div className="grid grid-cols-2 gap-3">
+                      <input
+                        className="min-h-12 rounded-lg border border-white/10 bg-[#07110e]/80 px-3 text-sm text-white outline-none"
+                        placeholder="Temperatura"
+                        value={editingSession.session.temperature}
+                        onChange={(event) =>
+                          updateEditingSessionField(
+                            "temperature",
+                            event.target.value,
+                          )
+                        }
+                      />
+                      <input
+                        className="min-h-12 rounded-lg border border-white/10 bg-[#07110e]/80 px-3 text-sm text-white outline-none"
+                        placeholder="Livello acqua"
+                        value={editingSession.session.waterLevel}
+                        onChange={(event) =>
+                          updateEditingSessionField("waterLevel", event.target.value)
+                        }
+                      />
+                    </div>
+                    {hasLocation(editingSession) ? (
+                      <div className="rounded-lg border border-emerald-300/15 bg-emerald-300/5 p-3">
+                        <p className="text-sm font-semibold text-emerald-100">
+                          Posizione Google Maps salvata
+                        </p>
+                        <button
+                          className="mt-3 inline-flex min-h-10 w-full items-center justify-center rounded-lg border border-white/10 px-3 text-sm font-bold text-slate-200"
+                          type="button"
+                          onClick={clearEditingLocation}
+                        >
+                          Rimuovi posizione
+                        </button>
+                      </div>
+                    ) : null}
+                  </div>
+                </section>
+
+                <section className="rounded-lg border border-white/10 bg-white/[0.045] p-4">
+                  <h3 className="text-lg font-semibold text-white">Setup e note</h3>
+                  <div className="mt-4 grid gap-3">
+                    <div className="grid grid-cols-2 gap-3">
+                      <input
+                        className="min-h-12 rounded-lg border border-white/10 bg-[#07110e]/80 px-3 text-sm text-white outline-none"
+                        placeholder="Esca"
+                        value={editingSession.setup.bait}
+                        onChange={(event) =>
+                          updateEditingSetupField("bait", event.target.value)
+                        }
+                      />
+                      <input
+                        className="min-h-12 rounded-lg border border-white/10 bg-[#07110e]/80 px-3 text-sm text-white outline-none"
+                        placeholder="Rig"
+                        value={editingSession.setup.rig}
+                        onChange={(event) =>
+                          updateEditingSetupField("rig", event.target.value)
+                        }
+                      />
+                    </div>
+                    <textarea
+                      className="min-h-24 rounded-lg border border-white/10 bg-[#07110e]/80 px-3 py-3 text-sm leading-6 text-white outline-none"
+                      placeholder="Pasturazione"
+                      value={editingSession.setup.feeding}
+                      onChange={(event) =>
+                        updateEditingSetupField("feeding", event.target.value)
+                      }
+                    />
+                    <textarea
+                      className="min-h-28 rounded-lg border border-white/10 bg-[#07110e]/80 px-3 py-3 text-sm leading-6 text-white outline-none"
+                      placeholder="Note sessione"
+                      value={editingSession.notes}
+                      onChange={(event) =>
+                        setEditingSession((current) =>
+                          current
+                            ? {
+                                ...current,
+                                notes: event.target.value,
+                              }
+                            : current,
+                        )
+                      }
+                    />
+                  </div>
+                </section>
+
+                <section className="space-y-3">
+                  <div className="flex items-center justify-between gap-3">
+                    <h3 className="text-lg font-semibold text-white">Catture</h3>
+                    <button
+                      className="inline-flex min-h-10 items-center justify-center gap-2 rounded-lg border border-emerald-300/25 bg-emerald-300/10 px-3 text-xs font-bold text-emerald-100"
+                      type="button"
+                      onClick={addEditingCatch}
+                    >
+                      <Plus aria-hidden="true" size={15} />
+                      Aggiungi
+                    </button>
+                  </div>
+                  {editingSession.catches.map((catchEntry, index) => (
+                    <article
+                      key={`${catchEntry.id}-${index}`}
+                      className="rounded-lg border border-white/10 bg-[#0d1b18]/90 p-4"
+                    >
+                      <div className="mb-3 flex items-center justify-between gap-3">
+                        <p className="text-sm font-semibold text-emerald-100">
+                          Cattura {index + 1}
+                        </p>
+                        <button
+                          aria-label={`Rimuovi cattura ${index + 1}`}
+                          className="grid h-9 w-9 place-items-center rounded-lg border border-white/10 text-slate-300"
+                          type="button"
+                          onClick={() => removeEditingCatch(index)}
+                        >
+                          <Trash2 aria-hidden="true" size={15} />
+                        </button>
+                      </div>
+                      <div className="grid grid-cols-2 gap-3">
+                        <input
+                          className="min-h-11 rounded-lg border border-white/10 bg-[#07110e]/80 px-3 text-sm text-white outline-none"
+                          placeholder="Peso"
+                          value={catchEntry.weight}
+                          onChange={(event) =>
+                            updateEditingCatch(index, "weight", event.target.value)
+                          }
+                        />
+                        <input
+                          className="min-h-11 rounded-lg border border-white/10 bg-[#07110e]/80 px-3 text-sm text-white outline-none"
+                          placeholder="Lunghezza"
+                          value={catchEntry.length}
+                          onChange={(event) =>
+                            updateEditingCatch(index, "length", event.target.value)
+                          }
+                        />
+                        <input
+                          className="min-h-11 rounded-lg border border-white/10 bg-[#07110e]/80 px-3 text-sm text-white outline-none"
+                          placeholder="Esca"
+                          value={catchEntry.bait}
+                          onChange={(event) =>
+                            updateEditingCatch(index, "bait", event.target.value)
+                          }
+                        />
+                        <input
+                          className="min-h-11 rounded-lg border border-white/10 bg-[#07110e]/80 px-3 text-sm text-white outline-none"
+                          type="time"
+                          value={catchEntry.time}
+                          onChange={(event) =>
+                            updateEditingCatch(index, "time", event.target.value)
+                          }
+                        />
+                      </div>
+                      <textarea
+                        className="mt-3 min-h-20 w-full rounded-lg border border-white/10 bg-[#07110e]/80 px-3 py-3 text-sm leading-6 text-white outline-none"
+                        placeholder="Note cattura"
+                        value={catchEntry.notes}
+                        onChange={(event) =>
+                          updateEditingCatch(index, "notes", event.target.value)
+                        }
+                      />
+                    </article>
+                  ))}
+                </section>
+
+                <div className="grid gap-3">
+                  <button
+                    className="inline-flex min-h-12 items-center justify-center gap-2 rounded-lg bg-emerald-400 px-4 text-sm font-bold text-[#07110e]"
+                    type="button"
+                    onClick={saveEditingSession}
+                  >
+                    <Save aria-hidden="true" size={17} />
+                    Salva modifiche
+                  </button>
+                  <button
+                    className="inline-flex min-h-12 items-center justify-center rounded-lg border border-white/10 bg-white/[0.045] px-4 text-sm font-bold text-slate-200"
+                    type="button"
+                    onClick={() => setEditingSession(null)}
+                  >
+                    Annulla
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <div className="space-y-5 p-4">
               <dl className="grid grid-cols-2 gap-3">
                 <DetailItem
                   label="Data"
@@ -521,7 +930,8 @@ export function SessionHistory() {
                   </div>
                 )}
               </section>
-            </div>
+              </div>
+            )}
           </section>
         </div>
       ) : null}

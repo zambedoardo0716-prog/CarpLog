@@ -125,6 +125,29 @@ function getTopEntry(counts: Map<string, number>) {
   return label ? { label, count } : null;
 }
 
+function normalizeStatKey(value: string) {
+  return value.trim().toLocaleLowerCase("it-IT");
+}
+
+function incrementNormalizedCount(
+  counts: Map<string, { label: string; count: number }>,
+  value: string,
+) {
+  const label = value.trim();
+  const key = normalizeStatKey(label);
+
+  if (!key) {
+    return;
+  }
+
+  const current = counts.get(key);
+
+  counts.set(key, {
+    label: current?.label ?? label,
+    count: (current?.count ?? 0) + 1,
+  });
+}
+
 function CounterList({
   emptyText,
   items,
@@ -199,20 +222,16 @@ export function StatisticsDashboard() {
           validWeights.length
         : 0;
 
-    const catchesBySpot = new Map<string, number>();
+    const catchesBySpot = new Map<string, { label: string; count: number }>();
     const catchesByMonth = new Map<string, number>();
-    const baitCounts = new Map<string, number>();
+    const baitCounts = new Map<string, { label: string; count: number }>();
 
     catches.forEach((entry) => {
-      catchesBySpot.set(entry.spot, (catchesBySpot.get(entry.spot) ?? 0) + 1);
+      incrementNormalizedCount(catchesBySpot, entry.spot);
       const month = getMonthKey(entry.sessionDate);
       catchesByMonth.set(month, (catchesByMonth.get(month) ?? 0) + 1);
 
-      const bait = entry.bait.trim();
-
-      if (bait) {
-        baitCounts.set(bait, (baitCounts.get(bait) ?? 0) + 1);
-      }
+      incrementNormalizedCount(baitCounts, entry.bait);
     });
 
     const topCatches = catches
@@ -230,10 +249,15 @@ export function StatisticsDashboard() {
           : 0,
       bestWeight,
       averageWeight,
-      mostProductiveSpot: getTopEntry(catchesBySpot),
-      mostUsedBait: getTopEntry(baitCounts),
-      catchesBySpot: [...catchesBySpot.entries()]
-        .map(([label, count]) => ({ label, count }))
+      mostProductiveSpot: getTopEntry(
+        new Map(
+          [...catchesBySpot.values()].map((entry) => [entry.label, entry.count]),
+        ),
+      ),
+      mostUsedBait: getTopEntry(
+        new Map([...baitCounts.values()].map((entry) => [entry.label, entry.count])),
+      ),
+      catchesBySpot: [...catchesBySpot.values()]
         .sort((a, b) => b.count - a.count),
       catchesByMonth: [...catchesByMonth.entries()]
         .map(([label, count]) => ({ label, count }))

@@ -444,6 +444,9 @@ export function QuickCatchForm() {
             </p>
             <p className="text-xs leading-5 text-slate-400">{locationStatus}</p>
             <p className="text-xs leading-5 text-slate-400">
+              Usa la posizione attuale solo se sei sullo spot.
+            </p>
+            <p className="text-xs leading-5 text-slate-400">
               Questi dati saranno indicati nel report come rilevati
               automaticamente.
             </p>
@@ -503,7 +506,7 @@ export function QuickCatchForm() {
                     Posizione
                   </span>
                   <span className="mt-1 block text-sm text-slate-300">
-                    Usa posizione attuale (geolocalizzazione)
+                    Usa posizione attuale solo se sei sullo spot
                   </span>
                 </span>
               </label>
