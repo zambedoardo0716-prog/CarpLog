@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
+import { PwaInstallBanner } from "@/components/pwa-install-banner";
 import {
   ArrowRight,
   CalendarDays,
@@ -220,6 +221,8 @@ export function HomeDashboard() {
 
   return (
     <div className="space-y-6">
+      <PwaInstallBanner />
+
       <section className="overflow-hidden rounded-lg border border-teal-700/20 bg-slate-900/75 p-5 shadow-xl shadow-teal-950/25">
         <p className="text-xs font-semibold uppercase tracking-[0.18em] text-teal-200">
           CarpLog
