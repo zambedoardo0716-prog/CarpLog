@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import type { ReactNode } from "react";
 import { useEffect, useMemo, useState } from "react";
 import {
   CalendarDays,
@@ -60,6 +61,26 @@ const filters: { label: string; value: HistoryFilter }[] = [
   { label: "Con catture", value: "with-catches" },
   { label: "Cappotti", value: "blank" },
 ];
+
+const editFieldBase =
+  "min-h-12 w-full rounded-lg border border-white/10 bg-[#07110e]/80 px-3 text-sm text-white outline-none transition placeholder:text-slate-500 focus:border-emerald-300/70 focus:bg-[#0c1a18] focus:ring-4 focus:ring-emerald-300/10";
+
+function EditField({
+  children,
+  label,
+}: {
+  children: ReactNode;
+  label: string;
+}) {
+  return (
+    <label className="block">
+      <span className="mb-2 block text-sm font-medium text-slate-300">
+        {label}
+      </span>
+      {children}
+    </label>
+  );
+}
 
 function readStoredSessions() {
   try {
@@ -451,18 +472,33 @@ export function SessionHistory() {
                       {entry.session.spot || "Spot non indicato"}
                     </h2>
                   </div>
-                  <button
-                    aria-label={`Elimina sessione ${entry.session.spot}`}
-                    className="inline-flex min-h-10 items-center justify-center gap-2 rounded-lg border border-white/10 px-3 text-xs font-bold text-slate-300 transition hover:border-red-300/30 hover:bg-red-400/10 hover:text-red-100"
-                    type="button"
-                    onClick={(event) => {
-                      event.stopPropagation();
-                      deleteSession(entry.id);
-                    }}
-                  >
-                    <Trash2 aria-hidden="true" size={15} />
-                    Elimina
-                  </button>
+                  <div className="grid shrink-0 gap-2">
+                    <button
+                      aria-label={`Modifica sessione ${entry.session.spot}`}
+                      className="inline-flex min-h-10 items-center justify-center gap-2 rounded-lg border border-emerald-300/25 bg-emerald-300/10 px-3 text-xs font-bold text-emerald-100 transition hover:bg-emerald-300/15"
+                      type="button"
+                      onClick={(event) => {
+                        event.stopPropagation();
+                        setSelectedSession(entry);
+                        startEditingSession(entry);
+                      }}
+                    >
+                      <Pencil aria-hidden="true" size={15} />
+                      Modifica
+                    </button>
+                    <button
+                      aria-label={`Elimina sessione ${entry.session.spot}`}
+                      className="inline-flex min-h-9 items-center justify-center gap-2 rounded-lg border border-white/10 px-3 text-xs font-bold text-slate-400 transition hover:border-red-300/30 hover:bg-red-400/10 hover:text-red-100"
+                      type="button"
+                      onClick={(event) => {
+                        event.stopPropagation();
+                        deleteSession(entry.id);
+                      }}
+                    >
+                      <Trash2 aria-hidden="true" size={14} />
+                      Elimina
+                    </button>
+                  </div>
                 </div>
 
                 <dl className="mt-4 grid grid-cols-2 gap-3 text-sm">
@@ -600,69 +636,106 @@ export function SessionHistory() {
                   </h3>
                   <div className="mt-4 grid gap-3">
                     <div className="grid grid-cols-2 gap-3">
-                      <input
-                        className="min-h-12 rounded-lg border border-white/10 bg-[#07110e]/80 px-3 text-sm text-white outline-none"
-                        type="date"
-                        value={editingSession.session.date}
-                        onChange={(event) =>
-                          updateEditingSessionField("date", event.target.value)
-                        }
-                      />
-                      <input
-                        className="min-h-12 rounded-lg border border-white/10 bg-[#07110e]/80 px-3 text-sm text-white outline-none"
-                        placeholder="Durata"
-                        value={editingSession.session.duration}
-                        onChange={(event) =>
-                          updateEditingSessionField("duration", event.target.value)
-                        }
-                      />
+                      <EditField label="Data">
+                        <input
+                          className={editFieldBase}
+                          type="date"
+                          value={editingSession.session.date}
+                          onChange={(event) =>
+                            updateEditingSessionField("date", event.target.value)
+                          }
+                        />
+                      </EditField>
+                      <EditField label="Durata">
+                        <input
+                          className={editFieldBase}
+                          placeholder="Es. 12h"
+                          value={editingSession.session.duration}
+                          onChange={(event) =>
+                            updateEditingSessionField(
+                              "duration",
+                              event.target.value,
+                            )
+                          }
+                        />
+                      </EditField>
                     </div>
-                    <input
-                      className="min-h-12 rounded-lg border border-white/10 bg-[#07110e]/80 px-3 text-sm text-white outline-none"
-                      placeholder="Spot"
-                      value={editingSession.session.spot}
-                      onChange={(event) =>
-                        updateEditingSessionField("spot", event.target.value)
-                      }
-                    />
+                    <EditField label="Spot">
+                      <input
+                        className={editFieldBase}
+                        placeholder="Nome spot o postazione"
+                        value={editingSession.session.spot}
+                        onChange={(event) =>
+                          updateEditingSessionField("spot", event.target.value)
+                        }
+                      />
+                    </EditField>
                     <div className="grid grid-cols-2 gap-3">
-                      <input
-                        className="min-h-12 rounded-lg border border-white/10 bg-[#07110e]/80 px-3 text-sm text-white outline-none"
-                        placeholder="Meteo"
-                        value={editingSession.session.weather}
-                        onChange={(event) =>
-                          updateEditingSessionField("weather", event.target.value)
-                        }
-                      />
-                      <input
-                        className="min-h-12 rounded-lg border border-white/10 bg-[#07110e]/80 px-3 text-sm text-white outline-none"
-                        placeholder="Vento"
-                        value={editingSession.session.wind}
-                        onChange={(event) =>
-                          updateEditingSessionField("wind", event.target.value)
-                        }
-                      />
+                      <EditField label="Meteo">
+                        <select
+                          className={editFieldBase}
+                          value={editingSession.session.weather}
+                          onChange={(event) =>
+                            updateEditingSessionField("weather", event.target.value)
+                          }
+                        >
+                          <option value="">Seleziona</option>
+                          <option>Sereno</option>
+                          <option>Nuvoloso</option>
+                          <option>Pioggia</option>
+                          <option>Nebbia</option>
+                          <option>Temporale</option>
+                        </select>
+                      </EditField>
+                      <EditField label="Vento">
+                        <select
+                          className={editFieldBase}
+                          value={editingSession.session.wind}
+                          onChange={(event) =>
+                            updateEditingSessionField("wind", event.target.value)
+                          }
+                        >
+                          <option value="">Seleziona</option>
+                          <option>Assente</option>
+                          <option>Leggero</option>
+                          <option>Moderato</option>
+                          <option>Forte</option>
+                        </select>
+                      </EditField>
                     </div>
                     <div className="grid grid-cols-2 gap-3">
-                      <input
-                        className="min-h-12 rounded-lg border border-white/10 bg-[#07110e]/80 px-3 text-sm text-white outline-none"
-                        placeholder="Temperatura"
-                        value={editingSession.session.temperature}
-                        onChange={(event) =>
-                          updateEditingSessionField(
-                            "temperature",
-                            event.target.value,
-                          )
-                        }
-                      />
-                      <input
-                        className="min-h-12 rounded-lg border border-white/10 bg-[#07110e]/80 px-3 text-sm text-white outline-none"
-                        placeholder="Livello acqua"
-                        value={editingSession.session.waterLevel}
-                        onChange={(event) =>
-                          updateEditingSessionField("waterLevel", event.target.value)
-                        }
-                      />
+                      <EditField label="Temperatura">
+                        <input
+                          className={editFieldBase}
+                          placeholder="Es. 14 C"
+                          value={editingSession.session.temperature}
+                          onChange={(event) =>
+                            updateEditingSessionField(
+                              "temperature",
+                              event.target.value,
+                            )
+                          }
+                        />
+                      </EditField>
+                      <EditField label="Livello acqua">
+                        <select
+                          className={editFieldBase}
+                          value={editingSession.session.waterLevel}
+                          onChange={(event) =>
+                            updateEditingSessionField(
+                              "waterLevel",
+                              event.target.value,
+                            )
+                          }
+                        >
+                          <option value="">Seleziona livello</option>
+                          <option>Basso</option>
+                          <option>Normale</option>
+                          <option>Alto</option>
+                          <option>In crescita</option>
+                          <option>In calo</option>
+                        </select>
+                      </EditField>
                     </div>
                     {hasLocation(editingSession) ? (
                       <div className="rounded-lg border border-emerald-300/15 bg-emerald-300/5 p-3">
@@ -685,46 +758,54 @@ export function SessionHistory() {
                   <h3 className="text-lg font-semibold text-white">Setup e note</h3>
                   <div className="mt-4 grid gap-3">
                     <div className="grid grid-cols-2 gap-3">
-                      <input
-                        className="min-h-12 rounded-lg border border-white/10 bg-[#07110e]/80 px-3 text-sm text-white outline-none"
-                        placeholder="Esca"
-                        value={editingSession.setup.bait}
-                        onChange={(event) =>
-                          updateEditingSetupField("bait", event.target.value)
-                        }
-                      />
-                      <input
-                        className="min-h-12 rounded-lg border border-white/10 bg-[#07110e]/80 px-3 text-sm text-white outline-none"
-                        placeholder="Rig"
-                        value={editingSession.setup.rig}
-                        onChange={(event) =>
-                          updateEditingSetupField("rig", event.target.value)
-                        }
-                      />
+                      <EditField label="Esca usata">
+                        <input
+                          className={editFieldBase}
+                          placeholder="Boilies, mais, tiger nut..."
+                          value={editingSession.setup.bait}
+                          onChange={(event) =>
+                            updateEditingSetupField("bait", event.target.value)
+                          }
+                        />
+                      </EditField>
+                      <EditField label="Rig usato">
+                        <input
+                          className={editFieldBase}
+                          placeholder="Hair rig, chod, ronnie..."
+                          value={editingSession.setup.rig}
+                          onChange={(event) =>
+                            updateEditingSetupField("rig", event.target.value)
+                          }
+                        />
+                      </EditField>
                     </div>
-                    <textarea
-                      className="min-h-24 rounded-lg border border-white/10 bg-[#07110e]/80 px-3 py-3 text-sm leading-6 text-white outline-none"
-                      placeholder="Pasturazione"
-                      value={editingSession.setup.feeding}
-                      onChange={(event) =>
-                        updateEditingSetupField("feeding", event.target.value)
-                      }
-                    />
-                    <textarea
-                      className="min-h-28 rounded-lg border border-white/10 bg-[#07110e]/80 px-3 py-3 text-sm leading-6 text-white outline-none"
-                      placeholder="Note sessione"
-                      value={editingSession.notes}
-                      onChange={(event) =>
-                        setEditingSession((current) =>
-                          current
-                            ? {
-                                ...current,
-                                notes: event.target.value,
-                              }
-                            : current,
-                        )
-                      }
-                    />
+                    <EditField label="Pasturazione">
+                      <textarea
+                        className={`${editFieldBase} min-h-24 resize-none py-3 leading-6`}
+                        placeholder="Quantita, mix, distanza, frequenza..."
+                        value={editingSession.setup.feeding}
+                        onChange={(event) =>
+                          updateEditingSetupField("feeding", event.target.value)
+                        }
+                      />
+                    </EditField>
+                    <EditField label="Note sessione">
+                      <textarea
+                        className={`${editFieldBase} min-h-28 resize-none py-3 leading-6`}
+                        placeholder="Condizioni, attivita del pesce, intuizioni..."
+                        value={editingSession.notes}
+                        onChange={(event) =>
+                          setEditingSession((current) =>
+                            current
+                              ? {
+                                  ...current,
+                                  notes: event.target.value,
+                                }
+                              : current,
+                          )
+                        }
+                      />
+                    </EditField>
                   </div>
                 </section>
 
@@ -759,47 +840,61 @@ export function SessionHistory() {
                         </button>
                       </div>
                       <div className="grid grid-cols-2 gap-3">
-                        <input
-                          className="min-h-11 rounded-lg border border-white/10 bg-[#07110e]/80 px-3 text-sm text-white outline-none"
-                          placeholder="Peso"
-                          value={catchEntry.weight}
-                          onChange={(event) =>
-                            updateEditingCatch(index, "weight", event.target.value)
-                          }
-                        />
-                        <input
-                          className="min-h-11 rounded-lg border border-white/10 bg-[#07110e]/80 px-3 text-sm text-white outline-none"
-                          placeholder="Lunghezza"
-                          value={catchEntry.length}
-                          onChange={(event) =>
-                            updateEditingCatch(index, "length", event.target.value)
-                          }
-                        />
-                        <input
-                          className="min-h-11 rounded-lg border border-white/10 bg-[#07110e]/80 px-3 text-sm text-white outline-none"
-                          placeholder="Esca"
-                          value={catchEntry.bait}
-                          onChange={(event) =>
-                            updateEditingCatch(index, "bait", event.target.value)
-                          }
-                        />
-                        <input
-                          className="min-h-11 rounded-lg border border-white/10 bg-[#07110e]/80 px-3 text-sm text-white outline-none"
-                          type="time"
-                          value={catchEntry.time}
-                          onChange={(event) =>
-                            updateEditingCatch(index, "time", event.target.value)
-                          }
-                        />
+                        <EditField label="Peso">
+                          <input
+                            className={editFieldBase}
+                            inputMode="decimal"
+                            placeholder="Es. 12,4 kg"
+                            value={catchEntry.weight}
+                            onChange={(event) =>
+                              updateEditingCatch(index, "weight", event.target.value)
+                            }
+                          />
+                        </EditField>
+                        <EditField label="Lunghezza">
+                          <input
+                            className={editFieldBase}
+                            inputMode="decimal"
+                            placeholder="Es. 78 cm"
+                            value={catchEntry.length}
+                            onChange={(event) =>
+                              updateEditingCatch(index, "length", event.target.value)
+                            }
+                          />
+                        </EditField>
+                        <EditField label="Esca">
+                          <input
+                            className={editFieldBase}
+                            placeholder="Esca"
+                            value={catchEntry.bait}
+                            onChange={(event) =>
+                              updateEditingCatch(index, "bait", event.target.value)
+                            }
+                          />
+                        </EditField>
+                        <EditField label="Ora">
+                          <input
+                            className={editFieldBase}
+                            type="time"
+                            value={catchEntry.time}
+                            onChange={(event) =>
+                              updateEditingCatch(index, "time", event.target.value)
+                            }
+                          />
+                        </EditField>
                       </div>
-                      <textarea
-                        className="mt-3 min-h-20 w-full rounded-lg border border-white/10 bg-[#07110e]/80 px-3 py-3 text-sm leading-6 text-white outline-none"
-                        placeholder="Note cattura"
-                        value={catchEntry.notes}
-                        onChange={(event) =>
-                          updateEditingCatch(index, "notes", event.target.value)
-                        }
-                      />
+                      <div className="mt-3">
+                        <EditField label="Note cattura">
+                          <textarea
+                            className={`${editFieldBase} min-h-20 resize-none py-3 leading-6`}
+                            placeholder="Dettagli su mangiata, combattimento..."
+                            value={catchEntry.notes}
+                            onChange={(event) =>
+                              updateEditingCatch(index, "notes", event.target.value)
+                            }
+                          />
+                        </EditField>
+                      </div>
                     </article>
                   ))}
                 </section>
