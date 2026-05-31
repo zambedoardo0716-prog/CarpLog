@@ -5,6 +5,7 @@ import type { ReactNode } from "react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
   CalendarDays,
+  Check,
   CloudSun,
   Clock,
   ExternalLink,
@@ -63,7 +64,7 @@ const filters: { label: string; value: HistoryFilter }[] = [
 ];
 
 const editFieldBase =
-  "min-h-12 w-full rounded-lg border border-white/10 bg-[#07110e]/80 px-3 text-sm text-white outline-none transition placeholder:text-slate-500 focus:border-emerald-300/70 focus:bg-[#0c1a18] focus:ring-4 focus:ring-emerald-300/10";
+  "min-h-12 w-full rounded-lg border border-teal-700/20 bg-slate-950/60 px-3 text-sm text-white outline-none transition placeholder:text-slate-500 focus:border-teal-500/70 focus:bg-slate-950 focus:ring-4 focus:ring-teal-700/15";
 
 function EditField({
   children,
@@ -200,6 +201,7 @@ export function SessionHistory() {
     null,
   );
   const [editingSession, setEditingSession] = useState<StoredSession | null>(null);
+  const [statusMessage, setStatusMessage] = useState("");
   const editingCatchRefs = useRef(new Map<number, HTMLElement>());
   const pendingScrollCatchIdRef = useRef<number | null>(null);
 
@@ -245,6 +247,16 @@ export function SessionHistory() {
     }, 0);
   }, [editingSession?.catches]);
 
+  useEffect(() => {
+    if (!statusMessage) {
+      return;
+    }
+
+    const timeoutId = window.setTimeout(() => setStatusMessage(""), 2600);
+
+    return () => window.clearTimeout(timeoutId);
+  }, [statusMessage]);
+
   function deleteSession(id: string) {
     const updatedSessions = sessions.filter((entry) => entry.id !== id);
 
@@ -254,6 +266,7 @@ export function SessionHistory() {
       setEditingSession(null);
     }
     localStorage.setItem("carplog:sessions", JSON.stringify(updatedSessions));
+    setStatusMessage("Sessione eliminata");
   }
 
   function startEditingSession(entry: StoredSession) {
@@ -344,6 +357,7 @@ export function SessionHistory() {
     const nextCatchId = Date.now();
 
     pendingScrollCatchIdRef.current = nextCatchId;
+    setStatusMessage("Nuova cattura pronta");
     setEditingSession((current) =>
       current
         ? {
@@ -365,6 +379,7 @@ export function SessionHistory() {
   }
 
   function removeEditingCatch(index: number) {
+    setStatusMessage("Cattura rimossa");
     setEditingSession((current) =>
       current
         ? {
@@ -415,12 +430,13 @@ export function SessionHistory() {
     setSelectedSession(updatedSession);
     setEditingSession(null);
     localStorage.setItem("carplog:sessions", JSON.stringify(updatedSessions));
+    setStatusMessage("Modifiche salvate");
   }
 
   if (sessions.length === 0) {
     return (
-      <section className="rounded-lg border border-dashed border-white/10 bg-white/[0.045] p-5 text-center shadow-xl shadow-black/20">
-        <div className="mx-auto grid h-12 w-12 place-items-center rounded-lg bg-emerald-300/10 text-emerald-100">
+      <section className="carp-rise rounded-lg border border-dashed border-teal-700/20 bg-slate-900/72 p-5 text-center shadow-xl shadow-teal-950/16">
+        <div className="mx-auto grid h-12 w-12 place-items-center rounded-lg bg-teal-700/15 text-teal-100">
           <Fish aria-hidden="true" size={23} />
         </div>
         <h2 className="mt-4 text-lg font-semibold text-white">
@@ -430,7 +446,7 @@ export function SessionHistory() {
           Le sessioni salvate in locale compariranno qui.
         </p>
         <Link
-          className="mt-5 inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-lg bg-emerald-400 px-4 text-sm font-bold text-[#07110e] shadow-lg shadow-emerald-950/40 transition hover:bg-emerald-300"
+          className="mt-5 inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-lg bg-teal-700 px-4 text-sm font-bold text-white shadow-lg shadow-teal-950/35 transition hover:bg-teal-600 active:scale-[0.99]"
           href="/nuova-sessione"
         >
           <Plus aria-hidden="true" size={18} />
@@ -442,7 +458,20 @@ export function SessionHistory() {
 
   return (
     <div className="space-y-4">
-      <div className="grid grid-cols-3 gap-2 rounded-lg border border-white/10 bg-white/[0.045] p-1">
+      {statusMessage ? (
+        <div
+          className="carp-rise fixed inset-x-4 bottom-24 z-50 mx-auto flex max-w-md items-center gap-3 rounded-lg border border-teal-500/30 bg-slate-950 p-3 text-sm font-semibold text-teal-50 shadow-2xl shadow-black/50"
+          role="status"
+          aria-live="polite"
+        >
+          <span className="grid h-7 w-7 shrink-0 place-items-center rounded-lg bg-teal-700 text-white">
+            <Check aria-hidden="true" size={16} strokeWidth={2.6} />
+          </span>
+          {statusMessage}
+        </div>
+      ) : null}
+
+      <div className="grid grid-cols-3 gap-2 rounded-lg border border-teal-700/20 bg-slate-900/72 p-1">
         {filters.map((filter) => {
           const isActive = activeFilter === filter.value;
 
@@ -451,8 +480,8 @@ export function SessionHistory() {
               key={filter.value}
               className={`min-h-10 rounded-md px-2 text-xs font-bold transition ${
                 isActive
-                  ? "bg-emerald-400 text-[#07110e]"
-                  : "text-slate-300 hover:bg-white/10 hover:text-white"
+                  ? "bg-teal-700 text-white shadow-lg shadow-teal-950/25"
+                  : "text-slate-300 hover:bg-teal-700/12 hover:text-white"
               }`}
               type="button"
               onClick={() => setActiveFilter(filter.value)}
@@ -464,7 +493,7 @@ export function SessionHistory() {
       </div>
 
       {filteredSessions.length === 0 ? (
-        <div className="rounded-lg border border-dashed border-white/10 bg-black/10 p-5 text-sm leading-6 text-slate-400">
+        <div className="rounded-lg border border-dashed border-teal-700/20 bg-slate-950/35 p-5 text-sm leading-6 text-slate-400">
           Nessuna sessione per questo filtro.
         </div>
       ) : (
@@ -477,7 +506,7 @@ export function SessionHistory() {
             return (
               <article
                 key={entry.id}
-                className="cursor-pointer rounded-lg border border-white/10 bg-[#0d1b18]/90 p-4 shadow-xl shadow-black/20 transition hover:border-emerald-300/25 hover:bg-[#10211d]"
+                className="carp-rise cursor-pointer rounded-lg border border-teal-700/18 bg-slate-900/76 p-4 shadow-xl shadow-teal-950/16 transition hover:border-teal-500/30 hover:bg-slate-900 active:scale-[0.995]"
                 role="button"
                 tabIndex={0}
                 onClick={() => setSelectedSession(entry)}
@@ -490,7 +519,7 @@ export function SessionHistory() {
               >
                 <div className="flex items-start justify-between gap-3">
                   <div>
-                    <div className="flex items-center gap-2 text-sm font-semibold text-emerald-100">
+                    <div className="flex items-center gap-2 text-sm font-semibold text-teal-100">
                       <CalendarDays aria-hidden="true" size={16} />
                       {formatDate(entry.session.date)}
                     </div>
@@ -502,7 +531,7 @@ export function SessionHistory() {
                   <div className="grid shrink-0 gap-2">
                     <button
                       aria-label={`Modifica sessione ${entry.session.spot}`}
-                      className="inline-flex min-h-10 items-center justify-center gap-2 rounded-lg border border-emerald-300/25 bg-emerald-300/10 px-3 text-xs font-bold text-emerald-100 transition hover:bg-emerald-300/15"
+                      className="inline-flex min-h-10 items-center justify-center gap-2 rounded-lg border border-teal-700/30 bg-teal-700/12 px-3 text-xs font-bold text-teal-100 transition hover:bg-teal-700/18 active:scale-[0.98]"
                       type="button"
                       onClick={(event) => {
                         event.stopPropagation();
@@ -573,19 +602,19 @@ export function SessionHistory() {
                 </dl>
 
                 {entry.notes ? (
-                  <p className="mt-4 rounded-lg border border-emerald-300/10 bg-emerald-300/5 p-3 text-sm leading-6 text-slate-300">
+                  <p className="mt-4 rounded-lg border border-teal-700/18 bg-teal-700/8 p-3 text-sm leading-6 text-slate-300">
                     {entry.notes}
                   </p>
                 ) : null}
 
                 {hasLocation(entry) ? (
-                  <div className="mt-4 rounded-lg border border-emerald-300/15 bg-emerald-300/5 p-3">
-                    <p className="flex items-center gap-2 text-sm font-semibold text-emerald-100">
+                  <div className="mt-4 rounded-lg border border-teal-700/20 bg-teal-700/8 p-3">
+                    <p className="flex items-center gap-2 text-sm font-semibold text-teal-100">
                       <LocateFixed aria-hidden="true" size={16} />
                       Posizione salvata
                     </p>
                     <a
-                      className="mt-3 inline-flex min-h-10 w-full items-center justify-center gap-2 rounded-lg border border-emerald-300/25 bg-emerald-300/10 px-3 text-sm font-bold text-emerald-100 transition hover:bg-emerald-300/15"
+                      className="mt-3 inline-flex min-h-10 w-full items-center justify-center gap-2 rounded-lg border border-teal-700/30 bg-teal-700/12 px-3 text-sm font-bold text-teal-100 transition hover:bg-teal-700/18 active:scale-[0.99]"
                       href={getMapsUrl(entry)}
                       onClick={(event) => {
                         event.stopPropagation();
@@ -617,12 +646,12 @@ export function SessionHistory() {
           }}
         >
           <section
-            className="mx-auto max-h-[88vh] w-full max-w-md overflow-y-auto rounded-lg border border-white/10 bg-[#07110e] shadow-2xl shadow-black/60"
+            className="carp-sheet mx-auto max-h-[88vh] w-full max-w-md overflow-y-auto rounded-lg border border-teal-700/20 bg-slate-950 shadow-2xl shadow-black/60"
             onClick={(event) => event.stopPropagation()}
           >
-            <div className="sticky top-0 z-10 flex items-start justify-between gap-3 border-b border-white/10 bg-[#07110e]/95 p-4 backdrop-blur-xl">
+            <div className="sticky top-0 z-10 flex items-start justify-between gap-3 border-b border-teal-700/20 bg-slate-950/95 p-4 backdrop-blur-xl">
               <div>
-                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-emerald-200/70">
+                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-teal-200/80">
                   {editingSession ? "Modifica" : "Dettaglio"}
                 </p>
                 <h2
@@ -634,7 +663,7 @@ export function SessionHistory() {
               </div>
               {!editingSession ? (
                 <button
-                  className="inline-flex min-h-10 shrink-0 items-center justify-center gap-2 rounded-lg border border-emerald-300/25 bg-emerald-300/10 px-3 text-xs font-bold text-emerald-100"
+                  className="inline-flex min-h-10 shrink-0 items-center justify-center gap-2 rounded-lg border border-teal-700/30 bg-teal-700/12 px-3 text-xs font-bold text-teal-100 transition hover:bg-teal-700/18 active:scale-[0.98]"
                   type="button"
                   onClick={() => startEditingSession(selectedSession)}
                 >
@@ -657,7 +686,7 @@ export function SessionHistory() {
 
             {editingSession ? (
               <div className="space-y-5 p-4">
-                <section className="rounded-lg border border-emerald-300/15 bg-emerald-300/5 p-4">
+                <section className="rounded-lg border border-teal-700/20 bg-slate-900/72 p-4 shadow-lg shadow-teal-950/12">
                   <h3 className="text-lg font-semibold text-white">
                     Modifica sessione
                   </h3>
@@ -765,8 +794,8 @@ export function SessionHistory() {
                       </EditField>
                     </div>
                     {hasLocation(editingSession) ? (
-                      <div className="rounded-lg border border-emerald-300/15 bg-emerald-300/5 p-3">
-                        <p className="text-sm font-semibold text-emerald-100">
+                      <div className="rounded-lg border border-teal-700/20 bg-teal-700/8 p-3">
+                        <p className="text-sm font-semibold text-teal-100">
                           Posizione Google Maps salvata
                         </p>
                         <button
@@ -781,7 +810,7 @@ export function SessionHistory() {
                   </div>
                 </section>
 
-                <section className="rounded-lg border border-white/10 bg-white/[0.045] p-4">
+                <section className="rounded-lg border border-teal-700/18 bg-slate-900/72 p-4 shadow-lg shadow-teal-950/12">
                   <h3 className="text-lg font-semibold text-white">Setup e note</h3>
                   <div className="mt-4 grid gap-3">
                     <div className="grid grid-cols-2 gap-3">
@@ -840,7 +869,7 @@ export function SessionHistory() {
                   <div className="flex items-center justify-between gap-3">
                     <h3 className="text-lg font-semibold text-white">Catture</h3>
                     <button
-                      className="inline-flex min-h-10 items-center justify-center gap-2 rounded-lg border border-emerald-300/25 bg-emerald-300/10 px-3 text-xs font-bold text-emerald-100"
+                      className="inline-flex min-h-10 items-center justify-center gap-2 rounded-lg border border-teal-700/30 bg-teal-700/12 px-3 text-xs font-bold text-teal-100 transition hover:bg-teal-700/18 active:scale-[0.98]"
                       type="button"
                       onClick={addEditingCatch}
                     >
@@ -859,15 +888,15 @@ export function SessionHistory() {
 
                         editingCatchRefs.current.delete(catchEntry.id);
                       }}
-                      className="rounded-lg border border-white/10 bg-[#0d1b18]/90 p-4"
+                      className="rounded-lg border border-teal-700/18 bg-slate-900/76 p-4 shadow-lg shadow-teal-950/12"
                     >
                       <div className="mb-3 flex items-center justify-between gap-3">
-                        <p className="text-sm font-semibold text-emerald-100">
+                        <p className="text-sm font-semibold text-teal-100">
                           Cattura {index + 1}
                         </p>
                         <button
                           aria-label={`Rimuovi cattura ${index + 1}`}
-                          className="grid h-9 w-9 place-items-center rounded-lg border border-white/10 text-slate-300"
+                          className="grid h-10 w-10 place-items-center rounded-lg border border-white/10 text-slate-300 transition hover:border-red-300/30 hover:bg-red-400/10 hover:text-red-100"
                           type="button"
                           onClick={() => removeEditingCatch(index)}
                         >
@@ -936,7 +965,7 @@ export function SessionHistory() {
 
                 <div className="grid gap-3">
                   <button
-                    className="inline-flex min-h-12 items-center justify-center gap-2 rounded-lg bg-emerald-400 px-4 text-sm font-bold text-[#07110e]"
+                    className="inline-flex min-h-12 items-center justify-center gap-2 rounded-lg bg-teal-700 px-4 text-sm font-bold text-white shadow-lg shadow-teal-950/35 transition hover:bg-teal-600 active:scale-[0.99]"
                     type="button"
                     onClick={saveEditingSession}
                   >
@@ -944,7 +973,7 @@ export function SessionHistory() {
                     Salva modifiche
                   </button>
                   <button
-                    className="inline-flex min-h-12 items-center justify-center rounded-lg border border-white/10 bg-white/[0.045] px-4 text-sm font-bold text-slate-200"
+                    className="inline-flex min-h-12 items-center justify-center rounded-lg border border-white/10 bg-white/[0.045] px-4 text-sm font-bold text-slate-200 transition hover:bg-white/10 active:scale-[0.99]"
                     type="button"
                     onClick={() => setEditingSession(null)}
                   >
@@ -1004,8 +1033,8 @@ export function SessionHistory() {
               ) : null}
 
               {hasLocation(selectedSession) ? (
-                <section className="rounded-lg border border-emerald-300/15 bg-emerald-300/5 p-4">
-                  <h3 className="flex items-center gap-2 text-sm font-semibold text-emerald-100">
+                <section className="rounded-lg border border-teal-700/20 bg-teal-700/8 p-4">
+                  <h3 className="flex items-center gap-2 text-sm font-semibold text-teal-100">
                     <LocateFixed aria-hidden="true" size={16} />
                     Posizione rilevata automaticamente
                   </h3>
@@ -1013,7 +1042,7 @@ export function SessionHistory() {
                     Coordinate salvate in privato sul dispositivo.
                   </p>
                   <a
-                    className="mt-3 inline-flex min-h-10 w-full items-center justify-center gap-2 rounded-lg border border-emerald-300/25 bg-emerald-300/10 px-3 text-sm font-bold text-emerald-100 transition hover:bg-emerald-300/15"
+                    className="mt-3 inline-flex min-h-10 w-full items-center justify-center gap-2 rounded-lg border border-teal-700/30 bg-teal-700/12 px-3 text-sm font-bold text-teal-100 transition hover:bg-teal-700/18 active:scale-[0.99]"
                     href={getMapsUrl(selectedSession)}
                     onClick={() => logMapsUrl(selectedSession)}
                     rel="noreferrer"
@@ -1032,9 +1061,9 @@ export function SessionHistory() {
                     {getCatches(selectedSession).map((catchEntry, index) => (
                       <article
                         key={`${catchEntry.id}-${index}`}
-                        className="rounded-lg border border-white/10 bg-[#0d1b18]/90 p-4"
+                        className="rounded-lg border border-teal-700/18 bg-slate-900/76 p-4 shadow-lg shadow-teal-950/12"
                       >
-                        <p className="text-sm font-semibold text-emerald-100">
+                        <p className="text-sm font-semibold text-teal-100">
                           Cattura {index + 1}
                         </p>
                         <dl className="mt-3 grid grid-cols-2 gap-3">

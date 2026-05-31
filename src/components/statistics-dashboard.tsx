@@ -170,15 +170,15 @@ function CounterList({
       {items.map((item) => (
         <article
           key={item.label}
-          className="rounded-lg border border-white/10 bg-[#0d1b18]/88 p-4"
+          className="carp-rise rounded-lg border border-teal-700/18 bg-slate-900/76 p-4 shadow-lg shadow-teal-950/12"
         >
           <div className="flex items-center justify-between gap-3">
             <p className="text-sm font-semibold text-white">{item.label}</p>
-            <p className="text-sm font-bold text-emerald-100">{item.count}</p>
+            <p className="text-sm font-bold text-teal-100">{item.count}</p>
           </div>
           <div className="mt-3 h-2 overflow-hidden rounded-full bg-white/10">
             <div
-              className="h-full rounded-full bg-emerald-400"
+              className="h-full rounded-full bg-teal-600"
               style={{ width: `${Math.max((item.count / maxCount) * 100, 8)}%` }}
             />
           </div>
@@ -324,8 +324,8 @@ export function StatisticsDashboard() {
   return (
     <div className="space-y-6">
       {sessions.length === 0 ? (
-        <section className="rounded-lg border border-dashed border-white/10 bg-white/[0.045] p-5 text-center shadow-xl shadow-black/20">
-          <div className="mx-auto grid h-12 w-12 place-items-center rounded-lg bg-emerald-300/10 text-emerald-100">
+        <section className="carp-rise rounded-lg border border-dashed border-teal-700/20 bg-slate-900/72 p-5 text-center shadow-xl shadow-teal-950/16">
+          <div className="mx-auto grid h-12 w-12 place-items-center rounded-lg bg-teal-700/15 text-teal-100">
             <BarChart3 aria-hidden="true" size={23} />
           </div>
           <h2 className="mt-4 text-lg font-semibold text-white">
@@ -335,7 +335,7 @@ export function StatisticsDashboard() {
             Salva almeno una sessione per iniziare a leggere le statistiche.
           </p>
           <Link
-            className="mt-5 inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-lg bg-emerald-400 px-4 text-sm font-bold text-[#07110e] shadow-lg shadow-emerald-950/40 transition hover:bg-emerald-300"
+            className="mt-5 inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-lg bg-teal-700 px-4 text-sm font-bold text-white shadow-lg shadow-teal-950/35 transition hover:bg-teal-600 active:scale-[0.99]"
             href="/nuova-sessione"
           >
             <Plus aria-hidden="true" size={18} />
@@ -351,9 +351,9 @@ export function StatisticsDashboard() {
           return (
             <article
               key={card.label}
-              className="min-h-36 rounded-lg border border-white/10 bg-[#0d1b18]/88 p-4 shadow-lg shadow-black/20"
+              className="carp-rise min-h-36 rounded-lg border border-teal-700/18 bg-slate-900/76 p-4 shadow-lg shadow-teal-950/12"
             >
-              <div className="mb-4 grid h-9 w-9 place-items-center rounded-lg bg-emerald-300/10 text-emerald-200">
+              <div className="mb-4 grid h-9 w-9 place-items-center rounded-lg bg-teal-700/15 text-teal-200">
                 <Icon aria-hidden="true" size={19} />
               </div>
               <p className="text-xs font-medium text-slate-400">{card.label}</p>
@@ -389,16 +389,16 @@ export function StatisticsDashboard() {
             {stats.topCatches.map((entry, index) => (
               <article
                 key={`${entry.sessionId}-${entry.id}-${index}`}
-                className="rounded-lg border border-white/10 bg-[#0d1b18]/88 p-4 shadow-lg shadow-black/20"
+                className="carp-rise rounded-lg border border-teal-700/18 bg-slate-900/76 p-4 shadow-lg shadow-teal-950/12"
               >
                 <div className="flex items-start justify-between gap-3">
                   <div>
-                    <p className="text-sm font-semibold text-emerald-100">
+                    <p className="text-sm font-semibold text-teal-100">
                       #{index + 1} - {formatWeight(entry.parsedWeight)}
                     </p>
                     <p className="mt-2 text-lg font-bold text-white">{entry.spot}</p>
                   </div>
-                  <Trophy aria-hidden="true" className="text-emerald-200" size={20} />
+                  <Trophy aria-hidden="true" className="text-teal-200" size={20} />
                 </div>
                 <p className="mt-3 text-sm text-slate-400">
                   {[formatDate(entry.sessionDate), entry.bait || "", entry.time || ""]

@@ -398,7 +398,7 @@ export function QuickCatchForm() {
 
       <section className="rounded-lg border border-teal-700/20 bg-slate-900/75 p-4 shadow-xl shadow-teal-950/20">
         <h2 className="text-base font-bold text-white">
-          Quando e dove e stata presa?
+          Quando e dove hai preso il pesce?
         </h2>
         <div className="mt-4 grid grid-cols-2 gap-2 rounded-lg border border-teal-700/15 bg-slate-950/45 p-1">
           <button
@@ -615,7 +615,7 @@ export function QuickCatchForm() {
       </section>
 
       <button
-        className="inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-lg bg-teal-700 px-4 text-sm font-bold text-white shadow-lg shadow-teal-950/35 transition hover:bg-teal-600"
+        className="inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-lg bg-teal-700 px-4 text-sm font-bold text-white shadow-lg shadow-teal-950/35 transition hover:bg-teal-600 active:scale-[0.99]"
         type="submit"
       >
         <Save aria-hidden="true" size={18} />
@@ -629,7 +629,7 @@ export function QuickCatchForm() {
           aria-modal="true"
           aria-labelledby="quick-catch-saved-title"
         >
-          <section className="mx-auto w-full max-w-md rounded-lg border border-teal-700/25 bg-slate-950 p-4 shadow-2xl shadow-black/60">
+          <section className="carp-sheet mx-auto w-full max-w-md rounded-lg border border-teal-700/25 bg-slate-950 p-4 shadow-2xl shadow-black/60">
             <div className="mx-auto mb-3 h-1 w-12 rounded-full bg-slate-700" />
             <div className="flex items-start gap-3">
               <span className="grid h-10 w-10 shrink-0 place-items-center rounded-lg bg-teal-700 text-white">
@@ -649,14 +649,14 @@ export function QuickCatchForm() {
             </p>
             <div className="mt-4 grid gap-2">
               <Link
-                className="inline-flex min-h-12 items-center justify-center gap-2 rounded-lg bg-teal-700 px-4 text-sm font-bold text-white shadow-lg shadow-teal-950/35 transition hover:bg-teal-600"
+                className="inline-flex min-h-12 items-center justify-center gap-2 rounded-lg bg-teal-700 px-4 text-sm font-bold text-white shadow-lg shadow-teal-950/35 transition hover:bg-teal-600 active:scale-[0.99]"
                 href="/nuova-sessione?quickCatchDraft=1"
               >
                 Aggiungi dettagli
                 <ChevronRight aria-hidden="true" size={17} />
               </Link>
               <button
-                className="inline-flex min-h-12 items-center justify-center rounded-lg border border-white/10 bg-slate-900 px-4 text-sm font-bold text-slate-200 transition hover:bg-white/10"
+                className="inline-flex min-h-12 items-center justify-center rounded-lg border border-white/10 bg-slate-900 px-4 text-sm font-bold text-slate-200 transition hover:bg-white/10 active:scale-[0.99]"
                 type="button"
                 onClick={savePendingSession}
               >

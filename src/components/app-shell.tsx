@@ -13,7 +13,7 @@ export function AppShell({ children }: { children: ReactNode }) {
     <div className="mx-auto flex min-h-screen w-full max-w-md flex-col overflow-hidden border-x border-teal-700/20 bg-slate-950/88 shadow-2xl shadow-black/45">
       <header className="sticky top-0 z-20 border-b border-teal-700/20 bg-slate-950/92 px-5 pb-4 pt-5 backdrop-blur-xl">
         <div className="flex items-center justify-between gap-4">
-          <Link href="/" className="flex items-center gap-3">
+          <Link href="/" className="flex items-center gap-3 rounded-lg transition active:scale-[0.99]">
             <span className="grid h-11 w-11 place-items-center rounded-lg bg-teal-700 text-white shadow-lg shadow-teal-950/35">
               <Fish aria-hidden="true" size={23} strokeWidth={2.4} />
             </span>
@@ -46,7 +46,7 @@ export function AppShell({ children }: { children: ReactNode }) {
                 key={item.href}
                 href={item.href}
                 aria-current={isActive ? "page" : undefined}
-                className={`flex min-h-14 flex-col items-center justify-center gap-1 rounded-lg px-1 text-[0.68rem] font-semibold transition ${
+                className={`flex min-h-14 flex-col items-center justify-center gap-1 rounded-lg px-1 text-[0.68rem] font-semibold transition active:scale-[0.98] ${
                   isActive
                     ? "bg-teal-700 text-white shadow-lg shadow-teal-950/35"
                     : "text-slate-300 hover:bg-teal-700/15 hover:text-white"

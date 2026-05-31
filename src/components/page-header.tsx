@@ -8,7 +8,7 @@ export function PageHeader({ eyebrow, title, description }: PageHeaderProps) {
   return (
     <section className="mb-6">
       {eyebrow ? (
-        <p className="mb-2 text-xs font-semibold uppercase tracking-[0.18em] text-emerald-200/70">
+        <p className="mb-2 text-xs font-semibold uppercase tracking-[0.18em] text-teal-200/80">
           {eyebrow}
         </p>
       ) : null}

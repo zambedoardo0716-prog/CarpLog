@@ -235,14 +235,14 @@ export function HomeDashboard() {
         </p>
         <Link
           href="/nuova-cattura"
-          className="mt-5 inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-lg bg-teal-700 px-4 text-sm font-bold text-white shadow-lg shadow-teal-950/35 transition hover:bg-teal-600"
+          className="mt-5 inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-lg bg-teal-700 px-4 text-sm font-bold text-white shadow-lg shadow-teal-950/35 transition hover:bg-teal-600 active:scale-[0.99]"
         >
           Nuova cattura
           <ArrowRight aria-hidden="true" size={18} />
         </Link>
         <Link
           href="/nuova-sessione"
-          className="mt-3 inline-flex min-h-10 w-full items-center justify-center rounded-lg border border-teal-700/20 bg-slate-950/35 px-4 text-xs font-bold text-teal-100 transition hover:bg-teal-700/10"
+          className="mt-3 inline-flex min-h-10 w-full items-center justify-center rounded-lg border border-teal-700/20 bg-slate-950/35 px-4 text-xs font-bold text-teal-100 transition hover:bg-teal-700/10 active:scale-[0.99]"
         >
           Nuova sessione completa
         </Link>
@@ -302,7 +302,7 @@ export function HomeDashboard() {
           </div>
 
           <button
-            className="mt-4 inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-lg border border-teal-700/35 bg-teal-700/15 px-4 text-sm font-bold text-teal-100 transition hover:bg-teal-700/20"
+            className="mt-4 inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-lg border border-teal-700/35 bg-teal-700/15 px-4 text-sm font-bold text-teal-100 transition hover:bg-teal-700/20 active:scale-[0.99]"
             type="button"
             onClick={() => setSelectedSession(summary.latestSession)}
           >
@@ -396,7 +396,7 @@ export function HomeDashboard() {
           onClick={() => setSelectedSession(null)}
         >
           <section
-            className="mx-auto max-h-[88vh] w-full max-w-md overflow-y-auto rounded-lg border border-teal-700/15 bg-slate-950 shadow-2xl shadow-black/60"
+            className="carp-sheet mx-auto max-h-[88vh] w-full max-w-md overflow-y-auto rounded-lg border border-teal-700/15 bg-slate-950 shadow-2xl shadow-black/60"
             onClick={(event) => event.stopPropagation()}
           >
             <div className="sticky top-0 z-10 flex items-start justify-between gap-3 border-b border-teal-700/15 bg-slate-950/95 p-4 backdrop-blur-xl">

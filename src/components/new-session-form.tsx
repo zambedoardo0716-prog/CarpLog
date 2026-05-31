@@ -70,7 +70,7 @@ type StoredSession = {
 };
 
 const fieldBase =
-  "min-h-12 w-full rounded-lg border border-white/10 bg-[#07110e]/80 px-4 text-sm text-white outline-none transition placeholder:text-slate-500 focus:border-emerald-300/70 focus:bg-[#0c1a18] focus:ring-4 focus:ring-emerald-300/10";
+  "min-h-12 w-full rounded-lg border border-teal-700/20 bg-slate-950/60 px-4 text-sm text-white outline-none transition placeholder:text-slate-500 focus:border-teal-500/70 focus:bg-slate-950 focus:ring-4 focus:ring-teal-700/15";
 
 const quickCatchDraftKey = "carplog:quick-catch-draft";
 
@@ -145,7 +145,7 @@ function Section({
   children: ReactNode;
 }) {
   return (
-    <section className="rounded-lg border border-white/10 bg-white/[0.055] p-4 shadow-xl shadow-black/20">
+    <section className="rounded-lg border border-teal-700/18 bg-slate-900/72 p-4 shadow-xl shadow-teal-950/16">
       <h2 className="mb-4 text-base font-semibold text-white">{title}</h2>
       {children}
     </section>
@@ -164,7 +164,7 @@ function Field({
   return (
     <label className="block">
       <span className="mb-2 flex items-center gap-2 text-sm font-medium text-slate-300">
-        <Icon aria-hidden="true" className="text-emerald-200/80" size={16} />
+        <Icon aria-hidden="true" className="text-teal-200/85" size={16} />
         {label}
       </span>
       {children}
@@ -319,7 +319,7 @@ export function NewSessionForm() {
 
   function removeCatch(id: number) {
     setSaveMessage("");
-    setCatchMessage("");
+    setCatchMessage("Cattura rimossa");
     setCatches((current) => current.filter((entry) => entry.id !== id));
   }
 
@@ -489,16 +489,16 @@ export function NewSessionForm() {
 
       {saveMessage ? (
         <div
-          className="fixed inset-x-4 bottom-24 z-50 mx-auto flex max-w-md items-start gap-3 rounded-lg border border-emerald-300/30 bg-[#0d1b18] p-4 text-sm text-emerald-50 shadow-2xl shadow-black/50"
+          className="carp-rise fixed inset-x-4 bottom-24 z-50 mx-auto flex max-w-md items-start gap-3 rounded-lg border border-teal-500/30 bg-slate-950 p-4 text-sm text-teal-50 shadow-2xl shadow-black/50"
           aria-live="polite"
           role="status"
         >
-          <span className="mt-0.5 grid h-7 w-7 shrink-0 place-items-center rounded-lg bg-emerald-400 text-[#07110e]">
+          <span className="mt-0.5 grid h-7 w-7 shrink-0 place-items-center rounded-lg bg-teal-700 text-white">
             <Check aria-hidden="true" size={17} strokeWidth={2.6} />
           </span>
           <span>
             <span className="block font-bold">Sessione salvata correttamente</span>
-            <span className="mt-1 block text-xs font-semibold text-emerald-100/75">
+            <span className="mt-1 block text-xs font-semibold text-teal-100/80">
               {saveMessage}
             </span>
           </span>
@@ -507,7 +507,7 @@ export function NewSessionForm() {
 
       {quickDraftLoaded ? (
         <div
-          className="rounded-lg border border-teal-300/30 bg-teal-400/10 p-4 shadow-xl shadow-teal-950/20"
+          className="carp-rise rounded-lg border border-teal-300/30 bg-teal-400/10 p-4 shadow-xl shadow-teal-950/20"
           role="status"
         >
           <p className="flex items-center gap-2 text-sm font-bold text-teal-100">
@@ -555,9 +555,9 @@ export function NewSessionForm() {
             />
           </Field>
 
-          <div className="rounded-lg border border-emerald-300/15 bg-[#07110e]/55 p-4">
+          <div className="rounded-lg border border-teal-700/20 bg-slate-950/45 p-4">
             <button
-              className="inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-lg border border-emerald-300/25 bg-emerald-300/10 px-4 text-sm font-bold text-emerald-100 transition hover:bg-emerald-300/15"
+              className="inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-lg border border-teal-700/30 bg-teal-700/12 px-4 text-sm font-bold text-teal-100 transition hover:bg-teal-700/18 active:scale-[0.99]"
               type="button"
               onClick={saveCurrentLocation}
             >
@@ -570,7 +570,7 @@ export function NewSessionForm() {
             {locationMessage ? (
               <p
                 className={`mt-3 text-sm font-semibold ${
-                  location ? "text-emerald-100" : "text-red-200"
+                  location ? "text-teal-100" : "text-red-200"
                 }`}
                 role="status"
               >
@@ -714,13 +714,13 @@ export function NewSessionForm() {
           ) : null}
 
           {catchMessage ? (
-            <p className="-mt-1 text-sm font-semibold text-emerald-100" role="status">
+            <p className="-mt-1 text-sm font-semibold text-teal-100" role="status">
               {catchMessage}
             </p>
           ) : null}
 
           <button
-            className="inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-lg border border-emerald-300/25 bg-emerald-300/10 px-4 text-sm font-bold text-emerald-100 transition hover:bg-emerald-300/15"
+            className="inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-lg border border-teal-700/30 bg-teal-700/12 px-4 text-sm font-bold text-teal-100 transition hover:bg-teal-700/18 active:scale-[0.99]"
             type="button"
             onClick={addCatch}
           >
@@ -736,12 +736,12 @@ export function NewSessionForm() {
                   className={`rounded-lg border p-4 ${
                     entry.quickCatch
                       ? "border-teal-300/40 bg-teal-400/10 shadow-lg shadow-teal-950/20"
-                      : "border-emerald-300/15 bg-[#0b1715]"
+                      : "border-teal-700/18 bg-slate-950/45 shadow-lg shadow-teal-950/10"
                   }`}
                 >
                   <div className="flex items-start justify-between gap-3">
                     <div>
-                      <p className="text-sm font-semibold text-emerald-100">
+                      <p className="text-sm font-semibold text-teal-100">
                         Cattura {index + 1}
                         {entry.quickCatch ? (
                           <span className="ml-2 rounded-full bg-teal-300/15 px-2 py-0.5 text-[0.68rem] font-bold uppercase tracking-[0.12em] text-teal-100">
@@ -802,14 +802,14 @@ export function NewSessionForm() {
 
       <div className="grid gap-3 pt-1">
         <button
-          className="inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-lg bg-emerald-400 px-4 text-sm font-bold text-[#07110e] shadow-lg shadow-emerald-950/40 transition hover:bg-emerald-300"
+          className="inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-lg bg-teal-700 px-4 text-sm font-bold text-white shadow-lg shadow-teal-950/35 transition hover:bg-teal-600 active:scale-[0.99]"
           type="submit"
         >
           <Save aria-hidden="true" size={18} />
           Salva sessione
         </button>
         <Link
-          className="inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-lg border border-white/10 bg-white/[0.045] px-4 text-sm font-bold text-slate-200 transition hover:bg-white/10"
+          className="inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-lg border border-white/10 bg-white/[0.045] px-4 text-sm font-bold text-slate-200 transition hover:bg-white/10 active:scale-[0.99]"
           href="/"
         >
           <Check aria-hidden="true" size={18} />

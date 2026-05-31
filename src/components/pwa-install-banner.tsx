@@ -97,7 +97,7 @@ export function PwaInstallBanner() {
   }
 
   return (
-    <section className="rounded-lg border border-teal-700/20 bg-slate-900/82 p-3 shadow-lg shadow-teal-950/20">
+    <section className="carp-rise rounded-lg border border-teal-700/20 bg-slate-900/82 p-3 shadow-lg shadow-teal-950/20">
       <div className="flex items-start gap-3">
         <div className="grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-teal-700/15 text-teal-100">
           <Download aria-hidden="true" size={18} />
@@ -113,7 +113,7 @@ export function PwaInstallBanner() {
             </p>
           ) : null}
           <button
-            className="mt-3 inline-flex min-h-9 items-center justify-center rounded-lg bg-teal-700 px-3 text-xs font-bold text-white transition hover:bg-teal-600"
+            className="mt-3 inline-flex min-h-10 items-center justify-center rounded-lg bg-teal-700 px-4 text-xs font-bold text-white shadow-lg shadow-teal-950/30 transition hover:bg-teal-600 active:scale-[0.99]"
             type="button"
             onClick={handleInstall}
           >
@@ -122,7 +122,7 @@ export function PwaInstallBanner() {
         </div>
         <button
           aria-label="Chiudi banner installazione"
-          className="grid h-8 w-8 shrink-0 place-items-center rounded-lg text-slate-300 transition hover:bg-white/5 hover:text-white"
+          className="grid h-10 w-10 shrink-0 place-items-center rounded-lg text-slate-300 transition hover:bg-white/5 hover:text-white active:scale-[0.98]"
           type="button"
           onClick={dismissBanner}
         >
