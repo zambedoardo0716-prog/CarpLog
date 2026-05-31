@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import type { ReactNode } from "react";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   CalendarDays,
   CloudSun,
@@ -200,6 +200,8 @@ export function SessionHistory() {
     null,
   );
   const [editingSession, setEditingSession] = useState<StoredSession | null>(null);
+  const editingCatchRefs = useRef(new Map<number, HTMLElement>());
+  const pendingScrollCatchIdRef = useRef<number | null>(null);
 
   useEffect(() => {
     setSessions(
@@ -220,6 +222,28 @@ export function SessionHistory() {
 
     return sessions;
   }, [activeFilter, sessions]);
+
+  useEffect(() => {
+    const pendingCatchId = pendingScrollCatchIdRef.current;
+
+    if (!pendingCatchId) {
+      return;
+    }
+
+    const catchElement = editingCatchRefs.current.get(pendingCatchId);
+
+    if (!catchElement) {
+      return;
+    }
+
+    pendingScrollCatchIdRef.current = null;
+    window.setTimeout(() => {
+      catchElement.scrollIntoView({ behavior: "smooth", block: "center" });
+      catchElement
+        .querySelector<HTMLInputElement>("input")
+        ?.focus({ preventScroll: true });
+    }, 0);
+  }, [editingSession?.catches]);
 
   function deleteSession(id: string) {
     const updatedSessions = sessions.filter((entry) => entry.id !== id);
@@ -317,6 +341,9 @@ export function SessionHistory() {
   }
 
   function addEditingCatch() {
+    const nextCatchId = Date.now();
+
+    pendingScrollCatchIdRef.current = nextCatchId;
     setEditingSession((current) =>
       current
         ? {
@@ -324,7 +351,7 @@ export function SessionHistory() {
             catches: [
               ...current.catches,
               {
-                id: Date.now(),
+                id: nextCatchId,
                 weight: "",
                 length: "",
                 bait: "",
@@ -824,6 +851,14 @@ export function SessionHistory() {
                   {editingSession.catches.map((catchEntry, index) => (
                     <article
                       key={`${catchEntry.id}-${index}`}
+                      ref={(node) => {
+                        if (node) {
+                          editingCatchRefs.current.set(catchEntry.id, node);
+                          return;
+                        }
+
+                        editingCatchRefs.current.delete(catchEntry.id);
+                      }}
                       className="rounded-lg border border-white/10 bg-[#0d1b18]/90 p-4"
                     >
                       <div className="mb-3 flex items-center justify-between gap-3">
